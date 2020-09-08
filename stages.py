@@ -1,5 +1,7 @@
 # 通常ブロック
 NORMAL = 'gray60'
+# 動かせる通常ブロック
+M_NORMAL = 'gray80'
 # ジャンプブロック
 JUMP = 'gold'
 
@@ -20,15 +22,19 @@ class Stage3:
     # キャラの初期位置
     obake_pos = (18, 21)
 
+    # 動かせるブロックの位置
+    movable_block_pos = [(9, 21, M_NORMAL), (21, 21, M_NORMAL)]
+
     # ブロック配置
     blocks = {
-        23: [NORMAL]*30,
+        24: [NORMAL]*30,
+        23: [NORMAL] + [None]*14 + [NORMAL]*9 + [None]*5 + [NORMAL],
         22: [NORMAL] + [None]*28 + [NORMAL],
         21: [NORMAL] + [None]*28 + [NORMAL],
-        20: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*3 + [NORMAL]*2 + [None]*2 + [NORMAL],
-        19: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*3 + [NORMAL]*2 + [None]*2 + [NORMAL],
-        18: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*3 + [NORMAL]*2 + [None]*2 + [NORMAL],
-        17: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*3 + [NORMAL]*2 + [None]*2 + [NORMAL],
+        20: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
+        19: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
+        18: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
+        17: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
         16: [NORMAL] + [None]*2 + [NORMAL]*24 + [None]*2 + [NORMAL],
         15: [NORMAL] + [None]*28 + [NORMAL],
         14: [NORMAL] + [None]*28 + [NORMAL],

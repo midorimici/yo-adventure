@@ -1,7 +1,13 @@
+import os
 import tkinter as tk
 from PIL import Image, ImageTk
+import pygame
 
 from stages import Stage3
+
+
+# ステージ
+stage = Stage3()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -20,9 +26,6 @@ IMG_WIDTH = 40
 JUMP_V0 = 20
 # 重力加速度
 GA = JUMP_V0/5
-
-# ステージ
-stage = Stage3()
 
 
 # キャラクター
@@ -64,7 +67,7 @@ class Obake:
 		self.x += 4
 		if not self.flying:
 			self.fall_move()
-		if hitting_block_x():
+		if hitting_block_x(self, IMG_WIDTH):
 			self.x = xtmp
 			self.time_x = 0
 			cv.coords(self.id, self.x, self.y)
@@ -82,7 +85,7 @@ class Obake:
 		self.x -= 4
 		if not self.flying:
 			self.fall_move()
-		if hitting_block_x():
+		if hitting_block_x(self, IMG_WIDTH):
 			self.x = xtmp
 			self.time_x = 0
 			cv.coords(self.id, self.x, self.y)
@@ -100,7 +103,7 @@ class Obake:
 		if self.y > WINDOW_HEIGHT:
 			# 画面外に出た
 			restart_game()
-		elif hitting_block_floor():
+		elif hitting_block_floor(self, IMG_WIDTH):
 			# 床に乗った
 			self.y = (self.y//BLOCK_SIZE)*BLOCK_SIZE
 			self.time_y = 0
@@ -114,6 +117,7 @@ class Obake:
 	
 	def jump(self, event):
 		if not self.flying:
+			jump_snd.play()
 			self.flying = True
 			self.jump_move()
 	
@@ -127,7 +131,7 @@ class Obake:
 			# 天井に当たった
 			self.fall_move()
 			return
-		elif hitting_block_floor():
+		elif hitting_block_floor(self, IMG_WIDTH):
 			# 床に乗った
 			self.y = (self.y//BLOCK_SIZE)*BLOCK_SIZE
 			self.time_y = 0
@@ -141,43 +145,105 @@ class Obake:
 
 # ブロック
 class Block:
-	def __init__(self, x, y, color):
+	def __init__(self, x, y, color, movable=False):
 		self.x = x
 		self.y = y
 		self.color = color
+		# 動かせるか
+		self.movable = movable
+		# アニメーション
+		self.time_y = 0
 		self.draw()
 	
 	def draw(self):
-		cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y - BLOCK_SIZE/2,
-			self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE/2,
-			fill=self.color)
+		if self.movable:
+			self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y - BLOCK_SIZE/2,
+				self.x + BLOCK_SIZE, self.y + BLOCK_SIZE*3/2,
+				fill=self.color)
+		else:
+			cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y - BLOCK_SIZE/2,
+				self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE/2,
+				fill=self.color)
+	
+	def __repr__(self):
+		return ('M ' if self.movable else '') + self.color
+	
+	# 以下は movable = True のときのみ使用
+	def slide_move(self):
+		'''ブロックが押されたときの動き'''
+		xtmp = self.x
+		if self.x > obake.x:
+			# ブロックがキャラの右側にあるとき
+			self.x += 4
+		else:
+			# ブロックがキャラの左側にあるとき
+			self.x -= 4
+		self.fall_move()
+		if hitting_block_x(self, BLOCK_SIZE*2):
+			self.x = xtmp
+		cv.coords(self.id, self.x - BLOCK_SIZE, self.y - BLOCK_SIZE,
+			self.x + BLOCK_SIZE, self.y + BLOCK_SIZE)
+	
+	def fall_move(self):
+		self.y += min(GA*self.time_y, 20)
+		if self.y > WINDOW_HEIGHT:
+			# 画面外に出た
+			cv.delete(self.id)
+		elif hitting_block_floor(self, 2*BLOCK_SIZE):
+			# 床に乗った
+			self.y = (self.y//BLOCK_SIZE)*BLOCK_SIZE
+			self.time_y = 0
+		else:
+			self.time_y += 1
+			root.after(50, self.fall_move)
+		cv.coords(self.id, self.x - BLOCK_SIZE, self.y - BLOCK_SIZE,
+			self.x + BLOCK_SIZE, self.y + BLOCK_SIZE)
 
 
-def hitting_block_x():
+def hitting_block_x(obj, width):
 	'''
 	キャラがブロックに横からぶつかっているかどうか
+
+	Parameters
+	----------
+	obj : obj
+		obake または動かせるブロックのオブジェクト．
+	width : int > 0
+		obj の幅．
 	
 	Returns
 	-------
 	bool
 	'''
 	for block in blocks:
-		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2
-				and abs(block.y - obake.y) < (IMG_WIDTH + BLOCK_SIZE)/2):
+		if obj == block: continue
+		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2
+				and abs(block.y - obj.y) < (width + BLOCK_SIZE)/2):
+			if block.movable:
+				# ブロックが動かせるとき
+				block.slide_move()
 			return True
 
 
-def hitting_block_floor():
+def hitting_block_floor(obj, width):
 	'''
-	キャラがブロックに上から接しているかどうか
+	キャラや動かせるブロックががブロックに上から接しているかどうか
+
+	Parameters
+	----------
+	obj : obj
+		obake または動かせるブロックのオブジェクト．
+	width : int > 0
+		obj の幅．
 	
 	Returns
 	-------
 	bool
 	'''
 	for block in blocks:
-		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
+		if obj == block: continue
+		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2 - 2
+				and block.y - (width + BLOCK_SIZE)/2 <= obj.y <= block.y - (BLOCK_SIZE)/2):
 			return True
 
 
@@ -231,6 +297,12 @@ def to_next_stage(event):
 def init_game(goal_pos, start_pos, blocks_dict):
 	global goal, obake, blocks
 	cv.delete('all')
+	# インスタンス削除
+	if obake is not None:
+		del obake
+	if blocks:
+		for block in blocks:
+			del block
 	# ゴールの描画
 	goal = cv.create_rectangle(BLOCK_SIZE*(goal_pos[0] - 1/2),
 		WINDOW_HEIGHT - BLOCK_SIZE*(goal_pos[1] + 1/2),
@@ -242,12 +314,17 @@ def init_game(goal_pos, start_pos, blocks_dict):
 	obake = Obake(BLOCK_SIZE*start_pos[0], WINDOW_HEIGHT - BLOCK_SIZE*start_pos[1] - IMG_WIDTH/2)
 	# ブロック
 	blocks = []
-	for y, b in blocks_dict.items():
-		for i, color in enumerate(b):
+	for y, row in blocks_dict.items():
+		for i, color in enumerate(row):
 			if color is not None:
 				block = Block((i + 1/2)*BLOCK_SIZE,
 					WINDOW_HEIGHT - (y + 1/2)*BLOCK_SIZE, color)
 				blocks.append(block)
+	if hasattr(stage, 'movable_block_pos'):
+		for x, y, color in stage.movable_block_pos:
+			block = Block(BLOCK_SIZE*x,
+				WINDOW_HEIGHT - BLOCK_SIZE*(y + 3/2), color, True)
+			blocks.append(block)
 
 
 def restart_game(*event):
@@ -257,8 +334,19 @@ def restart_game(*event):
 	# もとのインスタンスを削除
 	obake.delete()
 	del obake
-	# キャラインスタンス生成
+	if hasattr(stage, 'movable_block_pos'):
+		for block in blocks:
+			if block.movable:
+				cv.delete(block.id)
+				del block
+		del blocks[-len(stage.movable_block_pos):]
+	# インスタンス生成
 	obake = Obake(BLOCK_SIZE*stage.obake_pos[0], WINDOW_HEIGHT - BLOCK_SIZE*stage.obake_pos[1] - IMG_WIDTH/2)
+	if hasattr(stage, 'movable_block_pos'):
+		for x, y, color in stage.movable_block_pos:
+			block = Block(BLOCK_SIZE*x,
+				WINDOW_HEIGHT - BLOCK_SIZE*(y + 3/2), color, True)
+			blocks.append(block)
 
 
 if __name__ == '__main__':
@@ -283,6 +371,12 @@ if __name__ == '__main__':
 	cv.bind('R', restart_game)
 
 	# 初期化
+	obake = None
+	blocks = []
 	init_game(stage.goal_pos, stage.obake_pos, stage.blocks)
+
+	# 音声の設定
+	pygame.mixer.init()
+	jump_snd = pygame.mixer.Sound('jump.wav')
 
 	root.mainloop()
