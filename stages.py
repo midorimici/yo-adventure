@@ -4,6 +4,8 @@ NORMAL = 'gray60'
 M_NORMAL = 'gray80'
 # ジャンプブロック
 JUMP = 'gold'
+# 動かせるジャンプブロック
+M_JUMP = 'gold2'
 
 
 class Stage3:
@@ -17,31 +19,29 @@ class Stage3:
     next_stage = None
 
     # ゴールの座標
-    goal_pos = (12, 21)
+    goal_pos = (21, 19)
 
     # キャラの初期位置
-    obake_pos = (18, 21)
+    obake_pos = (21, 14)
 
     # 動かせるブロックの位置
-    movable_block_pos = [(9, 21, M_NORMAL), (21, 21, M_NORMAL)]
+    movable_block_pos = [(5, 10, M_JUMP), (5, 12, M_NORMAL), (8, 10, M_NORMAL), (24, 14, M_NORMAL)]
 
     # ブロック配置
     blocks = {
-        24: [NORMAL]*30,
-        23: [NORMAL] + [None]*14 + [NORMAL]*9 + [None]*5 + [NORMAL],
-        22: [NORMAL] + [None]*28 + [NORMAL],
-        21: [NORMAL] + [None]*28 + [NORMAL],
-        20: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
-        19: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
-        18: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
-        17: [NORMAL] + [None]*2 + [NORMAL]*10 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL] + [None]*2 + [NORMAL],
-        16: [NORMAL] + [None]*2 + [NORMAL]*24 + [None]*2 + [NORMAL],
+        22: [NORMAL]*30,
+        21: [NORMAL]*7 + [None]*22 + [NORMAL],
+        20: [NORMAL]*7 + [None]*22 + [NORMAL],
+        19: [NORMAL] + [None]*28 + [NORMAL],
+        18: [NORMAL] + [None]*28 + [NORMAL],
+        17: [NORMAL] + [None]*10 + [NORMAL]*19,
+        16: [NORMAL] + [None]*18 + [NORMAL]*7 + [None]*3 + [NORMAL],
         15: [NORMAL] + [None]*28 + [NORMAL],
         14: [NORMAL] + [None]*28 + [NORMAL],
-        13: [NORMAL] + [None]*28 + [NORMAL],
-        12: [NORMAL] + [None]*28 + [NORMAL],
-        11: [NORMAL] + [None]*28 + [NORMAL],
-        10: [NORMAL] + [None]*28 + [NORMAL],
+        13: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
+        12: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
+        11: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
+        10: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
         9: [NORMAL]*30,
     }
 

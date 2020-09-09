@@ -3,11 +3,11 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import pygame
 
-from stages import Stage2
+from stages import Stage1
 
 
 # ステージ
-stage = Stage2()
+stage = Stage1()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -157,12 +157,12 @@ class Block:
 	
 	def draw(self):
 		if self.movable:
-			self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y - BLOCK_SIZE/2,
-				self.x + BLOCK_SIZE, self.y + BLOCK_SIZE*3/2,
+			self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y,
+				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE,
 				fill=self.color)
 		else:
-			cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y - BLOCK_SIZE/2,
-				self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE/2,
+			cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y,
+				self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE,
 				fill=self.color)
 	
 	def __repr__(self):
@@ -179,10 +179,10 @@ class Block:
 			# ブロックがキャラの左側にあるとき
 			self.x -= 4
 		self.fall_move()
-		if hitting_block_x(self, BLOCK_SIZE*2):
+		if hitting_block_x(self, 2*BLOCK_SIZE):
 			self.x = xtmp
-		cv.coords(self.id, self.x - BLOCK_SIZE, self.y - BLOCK_SIZE,
-			self.x + BLOCK_SIZE, self.y + BLOCK_SIZE)
+		cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
+			self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
 	
 	def fall_move(self):
 		self.y += min(GA*self.time_y, 20)
@@ -196,8 +196,8 @@ class Block:
 		else:
 			self.time_y += 1
 			root.after(50, self.fall_move)
-		cv.coords(self.id, self.x - BLOCK_SIZE, self.y - BLOCK_SIZE,
-			self.x + BLOCK_SIZE, self.y + BLOCK_SIZE)
+		cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
+			self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
 
 
 def hitting_block_x(obj, width):
@@ -206,7 +206,7 @@ def hitting_block_x(obj, width):
 
 	Parameters
 	----------
-	obj : obj
+	obj : obj - Obake | Block
 		obake または動かせるブロックのオブジェクト．
 	width : int > 0
 		obj の幅．
@@ -217,8 +217,12 @@ def hitting_block_x(obj, width):
 	'''
 	for block in blocks:
 		if obj == block: continue
+		if getattr(obj, 'movable', False):
+			h = 0
+		else:
+			h = width/2
 		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2
-				and abs(block.y - obj.y) < (width + BLOCK_SIZE)/2):
+				and -(h + BLOCK_SIZE) < block.y - obj.y < width/2):
 			if block.movable:
 				# ブロックが動かせるとき
 				block.slide_move()
@@ -231,7 +235,7 @@ def hitting_block_floor(obj, width):
 
 	Parameters
 	----------
-	obj : obj
+	obj : obj - Obake | Block
 		obake または動かせるブロックのオブジェクト．
 	width : int > 0
 		obj の幅．
@@ -242,8 +246,12 @@ def hitting_block_floor(obj, width):
 	'''
 	for block in blocks:
 		if obj == block: continue
+		if getattr(obj, 'movable', False):
+			h = 2*width
+		else:
+			h = width
 		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2 - 2
-				and block.y - (width + BLOCK_SIZE)/2 <= obj.y <= block.y - (BLOCK_SIZE)/2):
+				and block.y - h/2 <= obj.y <= block.y):
 			return True
 
 
@@ -257,7 +265,7 @@ def hitting_block_ceil():
 	'''
 	for block in blocks:
 		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y + (BLOCK_SIZE)/2 <= obake.y <= block.y + (IMG_WIDTH + BLOCK_SIZE)/2):
+				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2):
 			return True
 
 
@@ -270,18 +278,19 @@ def on_jump_block():
 	bool
 	'''
 	for block in blocks:
-		if (block.color == 'gold'
+		if (block.color in 'gold2'
 				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
 			return True
 
 
 def judge_goal():
-	if (abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
+	if (not stage.clear
+			and abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
 			and abs(obake.y - cv.coords(goal)[1] + BLOCK_SIZE/2) < IMG_WIDTH):
                 clear_snd.play()
                 stage.clear = True
-                cv.create_text(WINDOW_WIDTH/2, WINDOW_HEIGHT/4,
+                cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
                         text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
                         justify='center', tag='clear')
                 cv.bind('N', to_next_stage)
@@ -318,13 +327,13 @@ def init_game(goal_pos, start_pos, blocks_dict):
 	for y, row in blocks_dict.items():
 		for i, color in enumerate(row):
 			if color is not None:
-				block = Block((i + 1/2)*BLOCK_SIZE,
-					WINDOW_HEIGHT - (y + 1/2)*BLOCK_SIZE, color)
+				block = Block(BLOCK_SIZE*(i + 1/2),
+					WINDOW_HEIGHT - BLOCK_SIZE*(y + 1), color)
 				blocks.append(block)
 	if hasattr(stage, 'movable_block_pos'):
 		for x, y, color in stage.movable_block_pos:
 			block = Block(BLOCK_SIZE*x,
-				WINDOW_HEIGHT - BLOCK_SIZE*(y + 3/2), color, True)
+				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), color, True)
 			blocks.append(block)
 
 
@@ -346,7 +355,7 @@ def restart_game(*event):
 	if hasattr(stage, 'movable_block_pos'):
 		for x, y, color in stage.movable_block_pos:
 			block = Block(BLOCK_SIZE*x,
-				WINDOW_HEIGHT - BLOCK_SIZE*(y + 3/2), color, True)
+				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), color, True)
 			blocks.append(block)
 
 
