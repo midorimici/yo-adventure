@@ -3,11 +3,11 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import pygame
 
-from stages import Stage3
+from stages import Stage2
 
 
 # ステージ
-stage = Stage3()
+stage = Stage2()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -279,11 +279,12 @@ def on_jump_block():
 def judge_goal():
 	if (abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
 			and abs(obake.y - cv.coords(goal)[1] + BLOCK_SIZE/2) < IMG_WIDTH):
-		stage.clear = True
-		cv.create_text(WINDOW_WIDTH/2, WINDOW_HEIGHT/4,
-			text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
-			justify='center', tag='clear')
-		cv.bind('N', to_next_stage)
+                clear_snd.play()
+                stage.clear = True
+                cv.create_text(WINDOW_WIDTH/2, WINDOW_HEIGHT/4,
+                        text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
+                        justify='center', tag='clear')
+                cv.bind('N', to_next_stage)
 
 
 def to_next_stage(event):
@@ -378,5 +379,6 @@ if __name__ == '__main__':
 	# 音声の設定
 	pygame.mixer.init()
 	jump_snd = pygame.mixer.Sound('jump.wav')
+	clear_snd = pygame.mixer.Sound('clear.wav')
 
 	root.mainloop()
