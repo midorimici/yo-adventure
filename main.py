@@ -3,11 +3,11 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import pygame
 
-from stages import Stage1
+from stages import Stage3
 
 
 # ステージ
-stage = Stage1()
+stage = Stage3()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -45,6 +45,12 @@ class Obake:
 		cv.delete(self.id)
 
 	def draw(self):
+		'''
+		一辺の長さ IMG_WIDTH の正方形
+		┌ ─ ┐
+		│ o │
+		└ ─ ┘
+		'''
 		self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
 
 	def bind(self):
@@ -156,6 +162,16 @@ class Block:
 		self.draw()
 	
 	def draw(self):
+		'''
+		if self.movable:
+			一辺の長さ 2*BLOCK_SIZE の正方形
+		else:
+			一辺の長さ BLOCK_SIZE の正方形
+
+		┌ o ┐
+		│   │
+		└ ─ ┘
+		'''
 		if self.movable:
 			self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y,
 				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE,
@@ -214,15 +230,42 @@ def hitting_block_x(obj, width):
 	Returns
 	-------
 	bool
+
+	Notes
+	-----
+	if 文条件式の図
+
+	abs(block.x - obj.x) < (width + BLOCK_SIZE)/2
+	
+	width
+	┌ x ┐ ↔ ┌ x ┐
+	│ x │   │ x │	obj
+	└ ─ ┼ x ┼ ─ ┘
+	    │   │		block
+	    └ ─ ┘
+	  BLOCK_SIZE
+	
+	-(h + BLOCK_SIZE) < block.y - obj.y < width/2
+	(obj.y - block.y < h + BLOCK_SIZE) and (block.y - obj.y < width - h)
+
+	     obj  block
+	h ↕ ┌ y ┐     ↑
+	  ⇣ │ y │   width
+	    └ ─ ┼ y ┐ ↓   ↑
+	      ↕ │   │ BLOCK_SIZE
+	h ↕ ┌ y ┼ ─ ┘     ↓
+	  ⇣ │ y │
+	    └ ─ ┘
 	'''
 	for block in blocks:
 		if obj == block: continue
+		# obj が動かせるブロックのとき、高さの当たり判定を0に
 		if getattr(obj, 'movable', False):
 			h = 0
 		else:
 			h = width/2
 		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2
-				and -(h + BLOCK_SIZE) < block.y - obj.y < width/2):
+				and -(h + BLOCK_SIZE) < block.y - obj.y < width - h):
 			if block.movable:
 				# ブロックが動かせるとき
 				block.slide_move()
@@ -243,15 +286,46 @@ def hitting_block_floor(obj, width):
 	Returns
 	-------
 	bool
+
+	Notes
+	-----
+	if 文条件式の図
+
+	abs(block.x - obj.x) < (width + w)/2 - 2
+
+	width
+	┌ x ┐ ↔ ┌ x ┐
+	│ x │   │ x │	obj
+	└ ─ ┼ x ┼ ─ ┘
+	    │   │		block
+	    └ ─ ┘
+	    ← w →
+	
+	block.y - h <= obj.y <= block.y
+
+	     obj  block
+	  ⇡ ┌ y ┐
+	h ↑ │ y │
+	  ↓ └ ─ ┼ y ┐
+			│   │
+			└ ─ ┘
+	
+	多少超過しても床をすり抜けないように制約を緩めている
 	'''
 	for block in blocks:
 		if obj == block: continue
-		if getattr(obj, 'movable', False):
-			h = 2*width
+		# ブロックが動かせるとき、幅2倍で計算
+		if getattr(block, 'movable', False):
+			w = 2*BLOCK_SIZE
 		else:
+			w = BLOCK_SIZE
+		# obj が動かせるブロックのとき、高さの当たり判定を2倍に
+		if getattr(obj, 'movable', False):
 			h = width
-		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2 - 2
-				and block.y - h/2 <= obj.y <= block.y):
+		else:
+			h = width/2
+		if (abs(block.x - obj.x) < (width + w)/2 - 2
+				and block.y - h <= obj.y <= block.y):
 			return True
 
 
