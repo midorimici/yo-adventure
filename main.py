@@ -22,10 +22,14 @@ BLOCK_SIZE = 20
 # キャラ幅
 IMG_WIDTH = 40
 
+# 横移動速度
+MOVE_V = 4
 # ジャンプ初速度
-JUMP_V0 = 20
+JUMP_V0 = 22
 # 重力加速度
 GA = JUMP_V0/5
+# ジャンプブロック初速係数
+JUMP_M = 5.5
 
 
 # キャラクター
@@ -60,17 +64,19 @@ class Obake:
 
 	def move_right(self, event):
 		if self.flying: return
+		if self.time_x > 0 and on_dark_block(): return
 		self.time_x = 0
 		self.r_move()
 	
 	def move_left(self, event):
 		if self.flying: return
+		if self.time_x > 0 and on_dark_block(): return
 		self.time_x = 0
 		self.l_move()
 	
 	def r_move(self):
 		xtmp = self.x
-		self.x += 4
+		self.x += MOVE_V
 		if not self.flying:
 			self.fall_move()
 		if hitting_block_x(self, IMG_WIDTH):
@@ -88,7 +94,7 @@ class Obake:
 	
 	def l_move(self):
 		xtmp = self.x
-		self.x -= 4
+		self.x -= MOVE_V
 		if not self.flying:
 			self.fall_move()
 		if hitting_block_x(self, IMG_WIDTH):
@@ -122,13 +128,13 @@ class Obake:
 		judge_goal()
 	
 	def jump(self, event):
-		if not self.flying:
-			jump_snd.play()
-			self.flying = True
-			self.jump_move()
+		if self.flying or on_dark_block(): return
+		jump_snd.play()
+		self.flying = True
+		self.jump_move()
 	
 	def jump_move(self):
-		v0 = 6*JUMP_V0 if on_jump_block() else JUMP_V0
+		v0 = JUMP_M*JUMP_V0 if on_jump_block() else JUMP_V0
 		self.y -= max(v0 - GA*self.time_y, -20)
 		if self.y > WINDOW_HEIGHT:
 			# 画面外に出た
@@ -353,6 +359,21 @@ def on_jump_block():
 	'''
 	for block in blocks:
 		if (block.color in 'gold2'
+				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
+				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
+			return True
+
+
+def on_dark_block():
+	'''
+	キャラが紫色ブロックに上から接しているかどうか
+	
+	Returns
+	-------
+	bool
+	'''
+	for block in blocks:
+		if (block.color in ['purple4', 'MediumPurple4']
 				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
 			return True
