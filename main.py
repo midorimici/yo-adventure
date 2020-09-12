@@ -1,13 +1,14 @@
 import os
+import math
 import tkinter as tk
 from PIL import Image, ImageTk
 import pygame
 
-from stages import Stage3
+from stages import Stage5
 
 
 # ステージ
-stage = Stage3()
+stage = Stage5()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -30,6 +31,10 @@ JUMP_V0 = 22
 GA = JUMP_V0/5
 # ジャンプブロック初速係数
 JUMP_M = 5.5
+
+# 重力の方向
+# u: ↑, d: ↓, l: ←, r: →
+glav_dir = 'd'
 
 
 # キャラクター
@@ -111,19 +116,35 @@ class Obake:
 		judge_goal()
 	
 	def fall_move(self):
-		self.y += min(GA*self.time_y, 20)
-		if self.y > WINDOW_HEIGHT:
-			# 画面外に出た
-			restart_game()
-		elif hitting_block_floor(self, IMG_WIDTH):
-			# 床に乗った
-			self.y = (self.y//BLOCK_SIZE)*BLOCK_SIZE
-			self.time_y = 0
-			self.flying = False
-		else:
-			self.flying = True
-			self.time_y += 1
-			root.after(50, self.fall_move)
+		dy = min(GA*self.time_y, 20)
+		if glav_dir == 'd':
+			self.y += dy
+			if self.y > WINDOW_HEIGHT:
+				# 画面外に出た
+				restart_game()
+			elif hitting_block_floor(self, IMG_WIDTH):
+				# 床に乗った
+				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.time_y = 0
+				self.flying = False
+			else:
+				self.flying = True
+				self.time_y += 1
+				root.after(50, self.fall_move)
+		elif glav_dir == 'u':
+			self.y -= dy
+			if self.y < 0:
+				# 画面外に出た
+				restart_game()
+			elif hitting_block_ceil():
+				# 床に乗った
+				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.time_y = 0
+				self.flying = False
+			else:
+				self.flying = True
+				self.time_y += 1
+				root.after(50, self.fall_move)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
@@ -135,32 +156,51 @@ class Obake:
 	
 	def jump_move(self):
 		v0 = JUMP_M*JUMP_V0 if on_jump_block() else JUMP_V0
-		self.y -= max(v0 - GA*self.time_y, -20)
-		if self.y > WINDOW_HEIGHT:
-			# 画面外に出た
-			restart_game()
-		elif hitting_block_ceil():
-			# 天井に当たった
-			self.fall_move()
-			return
-		elif hitting_block_floor(self, IMG_WIDTH):
-			# 床に乗った
-			self.y = (self.y//BLOCK_SIZE)*BLOCK_SIZE
-			self.time_y = 0
-			self.flying = False
-		else:
-			self.time_y += 1
-			root.after(50, self.jump_move)
+		dy = max(v0 - GA*self.time_y, -20)
+		if glav_dir == 'd':
+			self.y -= dy
+			if self.y > WINDOW_HEIGHT:
+				# 画面外に出た
+				restart_game()
+			elif hitting_block_ceil():
+				# 天井に当たった
+				self.fall_move()
+				return
+			elif hitting_block_floor(self, IMG_WIDTH):
+				# 床に乗った
+				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.time_y = 0
+				self.flying = False
+			else:
+				self.time_y += 1
+				root.after(50, self.jump_move)
+		elif glav_dir == 'u':
+			self.y += dy
+			if self.y < 0:
+				# 画面外に出た
+				restart_game()
+			elif hitting_block_floor(self, IMG_WIDTH):
+				# 天井に当たった
+				self.fall_move()
+				return
+			elif hitting_block_ceil():
+				# 床に乗った
+				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.time_y = 0
+				self.flying = False
+			else:
+				self.time_y += 1
+				root.after(50, self.jump_move)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 
 
 # ブロック
 class Block:
-	def __init__(self, x, y, color, movable=False):
+	def __init__(self, x, y, param, movable=False):
 		self.x = x
 		self.y = y
-		self.color = color
+		self.param = param
 		# 動かせるか
 		self.movable = movable
 		# アニメーション
@@ -181,14 +221,18 @@ class Block:
 		if self.movable:
 			self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y,
 				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE,
-				fill=self.color)
+				fill=self.param)
 		else:
-			cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y,
-				self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE,
-				fill=self.color)
+			if 'arrow' in self.param:
+				if self.param == 'udarrow': _img = udarrow_tkimg
+				cv.create_image(self.x, self.y, image=_img)
+			else:
+				cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y,
+					self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE,
+					fill=self.param)
 	
 	def __repr__(self):
-		return ('M ' if self.movable else '') + self.color
+		return ('M ' if self.movable else '') + self.param
 	
 	# 以下は movable = True のときのみ使用
 	def slide_move(self):
@@ -222,13 +266,14 @@ class Block:
 			self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
 
 
+# ブロックとの関係を判定する関数
 def hitting_block_x(obj, width):
 	'''
 	キャラがブロックに横からぶつかっているかどうか
 
 	Parameters
 	----------
-	obj : obj - Obake | Block
+	obj : obj -> Obake | Block
 		obake または動かせるブロックのオブジェクト．
 	width : int > 0
 		obj の幅．
@@ -280,11 +325,11 @@ def hitting_block_x(obj, width):
 
 def hitting_block_floor(obj, width):
 	'''
-	キャラや動かせるブロックががブロックに上から接しているかどうか
+	キャラや動かせるブロックがブロックに上から接しているかどうか
 
 	Parameters
 	----------
-	obj : obj - Obake | Block
+	obj : obj -> Obake | Block
 		obake または動かせるブロックのオブジェクト．
 	width : int > 0
 		obj の幅．
@@ -332,6 +377,10 @@ def hitting_block_floor(obj, width):
 			h = width/2
 		if (abs(block.x - obj.x) < (width + w)/2 - 2
 				and block.y - h <= obj.y <= block.y):
+			if (block.param == 'udarrow'
+					and not getattr(obj, 'movable', False)
+					and glav_dir == 'u'):
+				change_gravity('ud')
 			return True
 
 
@@ -342,10 +391,34 @@ def hitting_block_ceil():
 	Returns
 	-------
 	bool
+
+	Notes
+	-----
+	if 文条件式の図
+
+	abs(block.x - obj.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
+
+	  BLOCK_SIZE
+		┌ x ┐
+		│   │		block
+	┌ ─ ┼ ─ ┼ ─ ┐
+	│ x │   │ x │	obake
+	└ ─ ┘ ↔ └ ─ ┘
+		  IMG_WIDTH
+	
+	block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2
+
+		┌ y ┐		↑
+	  ⇡ │   │  BLOCK_SIZE
+	┌ ─ ┼ ─ ┘	↑	↓
+	│ y │   IMG_WIDTH
+	└ ─ ┘ 		↓
 	'''
 	for block in blocks:
 		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2):
+			if block.param == 'udarrow' and glav_dir == 'd':
+				change_gravity('ud')
 			return True
 
 
@@ -358,7 +431,7 @@ def on_jump_block():
 	bool
 	'''
 	for block in blocks:
-		if (block.color in 'gold2'
+		if (block.param in 'gold2'
 				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
 			return True
@@ -373,12 +446,35 @@ def on_dark_block():
 	bool
 	'''
 	for block in blocks:
-		if (block.color in ['purple4', 'MediumPurple4']
+		if (block.param in ['purple4', 'MediumPurple4']
 				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
 			return True
 
 
+def change_gravity(kind):
+	'''重力の方向を変える
+	
+	Parameters
+	----------
+	kind : str -> 'ud' | 'cw' | 'acw'
+		方向変化の種類．
+	'''
+	global glav_dir
+	if kind == 'ud':
+		if glav_dir == 'd':
+			glav_dir = 'u'
+			obake.delete()
+			obake.id = cv.create_image(obake.x, obake.y, image=obake_180_tkimg)
+			obake.y += BLOCK_SIZE
+		elif glav_dir == 'u':
+			glav_dir = 'd'
+			obake.delete()
+			obake.id = cv.create_image(obake.x, obake.y, image=obake_tkimg)
+			obake.y -= BLOCK_SIZE
+
+
+# システム関連の関数
 def judge_goal():
 	if (not stage.clear
 			and abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
@@ -400,7 +496,8 @@ def to_next_stage(event):
 
 
 def init_game(goal_pos, start_pos, blocks_dict):
-	global goal, obake, blocks
+	global glav_dir, goal, obake, blocks
+	glav_dir = 'd'
 	cv.delete('all')
 	# インスタンス削除
 	if obake is not None:
@@ -420,20 +517,21 @@ def init_game(goal_pos, start_pos, blocks_dict):
 	# ブロック
 	blocks = []
 	for y, row in blocks_dict.items():
-		for i, color in enumerate(row):
-			if color is not None:
+		for i, param in enumerate(row):
+			if param is not None:
 				block = Block(BLOCK_SIZE*(i + 1/2),
-					WINDOW_HEIGHT - BLOCK_SIZE*(y + 1), color)
+					WINDOW_HEIGHT - BLOCK_SIZE*(y + 1), param)
 				blocks.append(block)
 	if hasattr(stage, 'movable_block_pos'):
-		for x, y, color in stage.movable_block_pos:
+		for x, y, param in stage.movable_block_pos:
 			block = Block(BLOCK_SIZE*x,
-				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), color, True)
+				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
 			blocks.append(block)
 
 
 def restart_game(*event):
-	global obake
+	global glav_dir, obake
+	glav_dir = 'd'
 	# クリア文字消去
 	cv.delete('clear')
 	# もとのインスタンスを削除
@@ -448,9 +546,9 @@ def restart_game(*event):
 	# インスタンス生成
 	obake = Obake(BLOCK_SIZE*stage.obake_pos[0], WINDOW_HEIGHT - BLOCK_SIZE*stage.obake_pos[1] - IMG_WIDTH/2)
 	if hasattr(stage, 'movable_block_pos'):
-		for x, y, color in stage.movable_block_pos:
+		for x, y, param in stage.movable_block_pos:
 			block = Block(BLOCK_SIZE*x,
-				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), color, True)
+				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
 			blocks.append(block)
 
 
@@ -463,9 +561,16 @@ if __name__ == '__main__':
 	cv.focus_set()
 
 	# 画像の読み込み
+	# キャラクター
 	obake_img = Image.open('obake.png')
 	obake_img = obake_img.resize((IMG_WIDTH, IMG_WIDTH))
+	obake_180_img = obake_img.rotate(180)
 	obake_tkimg = ImageTk.PhotoImage(obake_img)
+	obake_180_tkimg = ImageTk.PhotoImage(obake_180_img)
+	# 重力ブロック
+	udarrow_img = Image.open('updownarrow.png')
+	udarrow_img = udarrow_img.resize((BLOCK_SIZE, BLOCK_SIZE))
+	udarrow_tkimg = ImageTk.PhotoImage(udarrow_img)
 
 	# メニューバー
 	menubar = tk.Menu(root)

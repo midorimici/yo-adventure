@@ -10,6 +10,35 @@ M_JUMP = 'gold2'
 DARK = 'purple4'
 # 動かせるジャンプ・ダッシュ禁止ブロック
 M_DARK = 'MediumPurple4'
+# 重力ブロック
+GLAVUD = 'udarrow'
+
+
+class Stage5:
+    # 名前
+    name = 'STAGE 5'
+
+    # クリア済み
+    clear = False
+
+    # 次のステージ
+    next_stage = None
+
+    # ゴールの座標
+    goal_pos = (21, 19)
+
+    # キャラの初期位置
+    obake_pos = (21, 14)
+
+    # 動かせるブロックの位置
+    # movable_block_pos = []
+
+    # ブロック配置
+    blocks = {
+        19: [NORMAL]*15,
+        14: [None]*4 + [GLAVUD],
+        9: [NORMAL]*30,
+    }
 
 
 class Stage4:
@@ -20,7 +49,7 @@ class Stage4:
     clear = False
 
     # 次のステージ
-    next_stage = None
+    next_stage = Stage5
 
     # ゴールの座標
     goal_pos = (20, 16)
