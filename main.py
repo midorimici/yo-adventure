@@ -69,13 +69,13 @@ class Obake:
 
 	def move_right(self, event):
 		if self.flying: return
-		if self.time_x > 0 and on_dark_block(): return
+		if self.time_x > 0 and on_block('dark'): return
 		self.time_x = 0
 		self.r_move()
 	
 	def move_left(self, event):
 		if self.flying: return
-		if self.time_x > 0 and on_dark_block(): return
+		if self.time_x > 0 and on_block('dark'): return
 		self.time_x = 0
 		self.l_move()
 	
@@ -149,13 +149,13 @@ class Obake:
 		judge_goal()
 	
 	def jump(self, event):
-		if self.flying or on_dark_block(): return
+		if self.flying or on_block('dark'): return
 		jump_snd.play()
 		self.flying = True
 		self.jump_move()
 	
 	def jump_move(self):
-		v0 = JUMP_M*JUMP_V0 if on_jump_block() else JUMP_V0
+		v0 = JUMP_M*JUMP_V0 if on_block('jump') else JUMP_V0
 		dy = max(v0 - GA*self.time_y, -20)
 		if glav_dir == 'd':
 			self.y -= dy
@@ -225,7 +225,7 @@ class Block:
 		else:
 			if 'arrow' in self.param:
 				if self.param == 'udarrow': _img = udarrow_tkimg
-				cv.create_image(self.x, self.y, image=_img)
+				cv.create_image(self.x, self.y + BLOCK_SIZE/2, image=_img)
 			else:
 				cv.create_rectangle(self.x - BLOCK_SIZE/2, self.y,
 					self.x + BLOCK_SIZE/2, self.y + BLOCK_SIZE,
@@ -422,34 +422,33 @@ def hitting_block_ceil():
 			return True
 
 
-def on_jump_block():
+def on_block(kind):
 	'''
-	キャラが黄色ブロックに上から接しているかどうか
+	キャラが特定のブロックに接しているかどうか
+
+	Parameters
+	----------
+	kind : str -> 'jump' | 'dark'
+		ブロックの種類
 	
 	Returns
 	-------
 	bool
 	'''
-	for block in blocks:
-		if (block.param in 'gold2'
-				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
-			return True
-
-
-def on_dark_block():
-	'''
-	キャラが紫色ブロックに上から接しているかどうか
-	
-	Returns
-	-------
-	bool
-	'''
-	for block in blocks:
-		if (block.param in ['purple4', 'MediumPurple4']
-				and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y - (IMG_WIDTH + BLOCK_SIZE)/2 <= obake.y <= block.y - (BLOCK_SIZE)/2):
-			return True
+	if kind == 'jump': collection = 'gold2'
+	elif kind == 'dark': collection = ['purple4', 'MediumPurple4']
+	if glav_dir == 'd':
+		for block in blocks:
+			if (block.param in collection
+					and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
+					and block.y - IMG_WIDTH/2 <= obake.y <= block.y):
+				return True
+	elif glav_dir == 'u':
+		for block in blocks:
+			if (block.param in collection
+					and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
+					and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2):
+				return True
 
 
 def change_gravity(kind):

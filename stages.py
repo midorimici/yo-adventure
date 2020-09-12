@@ -25,19 +25,44 @@ class Stage5:
     next_stage = None
 
     # ゴールの座標
-    goal_pos = (21, 19)
+    goal_pos = (20, 7)
 
     # キャラの初期位置
-    obake_pos = (21, 14)
+    obake_pos = (20, 10)
 
     # 動かせるブロックの位置
-    # movable_block_pos = []
+    movable_block_pos = [(16, 20, M_NORMAL)]
 
     # ブロック配置
     blocks = {
-        19: [NORMAL]*15,
-        14: [None]*4 + [GLAVUD],
-        9: [NORMAL]*30,
+        28: [NORMAL]*13 + [JUMP]*4 + [NORMAL]*13,
+        27: [NORMAL] + [None]*28 + [NORMAL],
+        26: [NORMAL] + [None]*28 + [NORMAL],
+        25: [NORMAL] + [None]*28 + [NORMAL],
+        24: [NORMAL] + [None]*28 + [NORMAL],
+        23: [NORMAL] + [None]*28 + [NORMAL],
+        22: [NORMAL] + [None]*28 + [NORMAL],
+        21: [NORMAL] + [None]*28 + [NORMAL],
+        20: [NORMAL] + [None]*28 + [NORMAL],
+        19: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + [None, GLAVUD, GLAVUD, None] + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
+        18: [NORMAL] + [None]*28 + [NORMAL],
+        17: [NORMAL] + [None]*28 + [NORMAL],
+        16: [NORMAL] + [None]*28 + [NORMAL],
+        15: [NORMAL] + [None]*28 + [NORMAL],
+        14: [NORMAL]*4 + [None, GLAVUD, None] + [NORMAL]*6 + [None]*4 + [NORMAL]*6 + [JUMP]*3 + [NORMAL]*4,
+        13: [NORMAL] + [None]*28 + [NORMAL],
+        12: [NORMAL] + [None]*28 + [NORMAL],
+        11: [NORMAL] + [None]*28 + [NORMAL],
+        10: [NORMAL] + [None]*28 + [NORMAL],
+        9: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + [None, GLAVUD, GLAVUD, None] + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
+        8: [NORMAL] + [None]*28 + [NORMAL],
+        7: [NORMAL] + [None]*28 + [NORMAL],
+        6: [NORMAL] + [None]*28 + [NORMAL],
+        5: [NORMAL] + [None]*28 + [NORMAL],
+        4: [NORMAL] + [None]*28 + [NORMAL],
+        3: [NORMAL] + [None]*28 + [NORMAL],
+        2: [NORMAL] + [None]*28 + [NORMAL],
+        1: [NORMAL]*4 + [JUMP]*3 + [NORMAL]*23,
     }
 
 
