@@ -31,7 +31,7 @@ class Stage5:
     obake_pos = (20, 10)
 
     # 動かせるブロックの位置
-    movable_block_pos = [(16, 20, M_NORMAL)]
+    movable_block_pos = [(3, 2, M_NORMAL), (16, 20, M_NORMAL)]
 
     # ブロック配置
     blocks = {
@@ -62,7 +62,7 @@ class Stage5:
         4: [NORMAL] + [None]*28 + [NORMAL],
         3: [NORMAL] + [None]*28 + [NORMAL],
         2: [NORMAL] + [None]*28 + [NORMAL],
-        1: [NORMAL]*4 + [JUMP]*3 + [NORMAL]*23,
+        1: [NORMAL]*4 + [JUMP]*3 + [NORMAL]*16 + [None]*3 + [NORMAL]*4,
     }
 
 
@@ -165,7 +165,7 @@ class Stage2:
     next_stage = Stage3
 
     # ゴールの座標
-    goal_pos = (15, 25)
+    goal_pos = (14, 25)
 
     # キャラの初期位置
     obake_pos = (3, 1)
@@ -177,8 +177,7 @@ class Stage2:
         15: [None]*5 + [NORMAL],
         14: [None]*5 + [NORMAL],
         13: [None]*3 + [NORMAL]*3,
-        10: [NORMAL],
-        9: [None]*2 + [NORMAL]*3,
+        9: [None, JUMP] + [NORMAL]*3,
         8: [None]*6 + [NORMAL]*2 + [JUMP, NORMAL] + [None]*13 + [JUMP] + [NORMAL],
         0: [NORMAL]*10 + [None]*10 + [NORMAL]*7 + [JUMP] + [NORMAL]*2,
     }

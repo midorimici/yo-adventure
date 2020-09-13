@@ -1,14 +1,14 @@
 import os
 import math
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import pygame
 
-from stages import Stage5
+from stages import Stage2
 
 
 # ステージ
-stage = Stage5()
+stage = Stage2()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -70,12 +70,24 @@ class Obake:
 	def move_right(self, event):
 		if self.flying: return
 		if self.time_x > 0 and on_block('dark'): return
+		# 画像左右反転
+		self.delete()
+		if glav_dir == 'd':
+			self.id = cv.create_image(self.x, self.y, image=obake_mirror_tkimg)
+		elif glav_dir == 'u':
+			self.id = cv.create_image(self.x, self.y, image=obake_fm_tkimg)
 		self.time_x = 0
 		self.r_move()
 	
 	def move_left(self, event):
 		if self.flying: return
 		if self.time_x > 0 and on_block('dark'): return
+		# 画像左右反転
+		self.delete()
+		if glav_dir == 'd':
+			self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
+		elif glav_dir == 'u':
+			self.id = cv.create_image(self.x, self.y, image=obake_flip_tkimg)
 		self.time_x = 0
 		self.l_move()
 	
@@ -464,7 +476,7 @@ def change_gravity(kind):
 		if glav_dir == 'd':
 			glav_dir = 'u'
 			obake.delete()
-			obake.id = cv.create_image(obake.x, obake.y, image=obake_180_tkimg)
+			obake.id = cv.create_image(obake.x, obake.y, image=obake_flip_tkimg)
 			obake.y += BLOCK_SIZE
 		elif glav_dir == 'u':
 			glav_dir = 'd'
@@ -563,9 +575,13 @@ if __name__ == '__main__':
 	# キャラクター
 	obake_img = Image.open('obake.png')
 	obake_img = obake_img.resize((IMG_WIDTH, IMG_WIDTH))
-	obake_180_img = obake_img.rotate(180)
+	obake_flip_img = ImageOps.flip(obake_img)		# 上下反転
+	obake_mirror_img = ImageOps.mirror(obake_img)	# 左右反転（右向き）
+	obake_fm_img = ImageOps.mirror(obake_flip_img)	# 上下左右反転
 	obake_tkimg = ImageTk.PhotoImage(obake_img)
-	obake_180_tkimg = ImageTk.PhotoImage(obake_180_img)
+	obake_flip_tkimg = ImageTk.PhotoImage(obake_flip_img)
+	obake_mirror_tkimg = ImageTk.PhotoImage(obake_mirror_img)
+	obake_fm_tkimg = ImageTk.PhotoImage(obake_fm_img)
 	# 重力ブロック
 	udarrow_img = Image.open('updownarrow.png')
 	udarrow_img = udarrow_img.resize((BLOCK_SIZE, BLOCK_SIZE))
