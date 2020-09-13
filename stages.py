@@ -143,7 +143,7 @@ class Stage3:
         19: [NORMAL] + [None]*28 + [NORMAL],
         18: [NORMAL] + [None]*28 + [NORMAL],
         17: [NORMAL] + [None]*10 + [NORMAL]*19,
-        16: [NORMAL] + [None]*18 + [NORMAL]*7 + [None]*3 + [NORMAL],
+        16: [NORMAL] + [None]*28 + [NORMAL],
         15: [NORMAL] + [None]*28 + [NORMAL],
         14: [NORMAL] + [None]*28 + [NORMAL],
         13: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],

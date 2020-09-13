@@ -4,11 +4,11 @@ import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
 import pygame
 
-from stages import Stage2
+from stages import Stage5
 
 
 # ステージ
-stage = Stage2()
+stage = Stage5()
 
 # ウィンドウサイズ
 WINDOW_HEIGHT = 600
@@ -26,11 +26,11 @@ IMG_WIDTH = 40
 # 横移動速度
 MOVE_V = 4
 # ジャンプ初速度
-JUMP_V0 = 22
+JUMP_V0 = 20
 # 重力加速度
-GA = JUMP_V0/5
+GA = JUMP_V0/6
 # ジャンプブロック初速係数
-JUMP_M = 5.5
+JUMP_M = 6
 
 # 重力の方向
 # u: ↑, d: ↓, l: ←, r: →
