@@ -5,11 +5,11 @@ import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
 import pygame
 
-from stages import Stage3
+from stages import Stage4
 
 
 # ステージ
-stage = Stage3()
+stage = Stage4()
 
 # 画面サイズ
 display_w = windll.user32.GetSystemMetrics(0)
@@ -74,6 +74,8 @@ class Obake:
 		self.time_y = 0
 		# ジャンプ中or落下中
 		self.flying = False
+		# ダークブロックの影響下
+		self.isdark = False
 		self.draw()
 		self.bind()
 	
@@ -95,8 +97,7 @@ class Obake:
 		cv.bind("k", self.jump)
 
 	def move_right(self, event):
-		if self.flying: return
-		if self.time_x > 0 and on_block('dark'): return
+		if self.time_x > 0 and self.isdark: return
 		# 画像左右反転
 		self.delete()
 		if glav_dir == 'd':
@@ -107,8 +108,7 @@ class Obake:
 		self.r_move()
 	
 	def move_left(self, event):
-		if self.flying: return
-		if self.time_x > 0 and on_block('dark'): return
+		if self.time_x > 0 and self.isdark: return
 		# 画像左右反転
 		self.delete()
 		if glav_dir == 'd':
@@ -166,6 +166,10 @@ class Obake:
 				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE
 				self.time_y = 0
 				self.flying = False
+				if on_block('dark'):
+					self.isdark = True
+				else:
+					self.isdark = False
 			else:
 				self.flying = True
 				self.time_y += 1
@@ -180,6 +184,10 @@ class Obake:
 				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE
 				self.time_y = 0
 				self.flying = False
+				if on_block('dark'):
+					self.isdark = True
+				else:
+					self.isdark = False
 			else:
 				self.flying = True
 				self.time_y += 1

@@ -14,6 +14,37 @@ M_DARK = 'MediumPurple4'
 GLAVUD = 'udarrow'
 
 
+class Stage6:
+    # 名前
+    name = 'STAGE 6'
+
+    # クリア済み
+    clear = False
+
+    # 次のステージ
+    next_stage = None
+
+    # ゴールの座標
+    goal_pos = (10, 8)
+
+    # キャラの初期位置
+    obake_pos = (10, 5)
+
+    # 動かせるブロックの位置
+    # movable_block_pos = []
+
+    # ブロック配置
+    blocks = {
+        10: [NORMAL] + [None]*3 + [NORMAL]*22 + [None]*3 + [NORMAL],
+        9: [NORMAL] + [None]*28 + [NORMAL],
+        8: [NORMAL] + [None]*10 + [NORMAL] + [None]*17 + [NORMAL],
+        7: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*8 + [None]*2 + [NORMAL]*5 + [None]*3 + [NORMAL],
+        6: [NORMAL] + [None]*28 + [NORMAL],
+        5: [NORMAL] + [None]*28 + [NORMAL],
+        4: [NORMAL] + [DARK]*3 + [NORMAL]*5 + [DARK]*2 + [NORMAL]*8 + [DARK]*2 + [NORMAL]*9,
+    }
+
+
 class Stage5:
     # 名前
     name = 'STAGE 5'
@@ -22,7 +53,7 @@ class Stage5:
     clear = False
 
     # 次のステージ
-    next_stage = None
+    next_stage = Stage6
 
     # ゴールの座標
     goal_pos = (20, 7)
@@ -85,7 +116,7 @@ class Stage4:
     # 動かせるブロックの位置
     movable_block_pos = [
         (6, 12, M_NORMAL),
-        (13, 12, M_NORMAL),
+        (13, 12, M_DARK),
         (13, 16, M_DARK),
         (10, 20, M_DARK),
         (20, 20, M_DARK)
@@ -137,15 +168,16 @@ class Stage3:
 
     # ブロック配置
     blocks = {
-        22: [NORMAL]*30,
+        23: [NORMAL]*30,
+        22: [NORMAL]*7 + [None]*22 + [NORMAL],
         21: [NORMAL]*7 + [None]*22 + [NORMAL],
-        20: [NORMAL]*7 + [None]*22 + [NORMAL],
+        20: [NORMAL] + [None]*28 + [NORMAL],
         19: [NORMAL] + [None]*28 + [NORMAL],
-        18: [NORMAL] + [None]*28 + [NORMAL],
-        17: [NORMAL] + [None]*10 + [NORMAL]*19,
-        16: [NORMAL] + [None]*18 + [NORMAL]*7 + [None]*3 + [NORMAL],
-        15: [NORMAL] + [None]*28 + [NORMAL],
-        14: [NORMAL] + [None]*28 + [NORMAL],
+        18: [NORMAL] + [None]*10 + [NORMAL]*19,
+        17: [NORMAL] + [None]*17 + [NORMAL]*12,
+        16: [NORMAL] + [None]*17 + [NORMAL]*12,
+        15: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
+        14: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
         13: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
         12: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
         11: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
