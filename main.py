@@ -5,11 +5,11 @@ import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
 import pygame
 
-from stages import Stage4
+from stages import Stage6
 
 
 # ステージ
-stage = Stage4()
+stage = Stage6()
 
 # 画面サイズ
 display_w = windll.user32.GetSystemMetrics(0)

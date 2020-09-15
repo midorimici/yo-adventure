@@ -1,3 +1,7 @@
+'''ステージの定義をするモジュール'''
+
+### ブロック ###
+### ふつう色で定義するが、重力ブロックは Block.draw() で特別扱い。
 # 通常ブロック
 NORMAL = 'gray60'
 # 動かせる通常ブロック
@@ -14,6 +18,19 @@ M_DARK = 'MediumPurple4'
 GLAVUD = 'udarrow'
 
 
+### ブロック群 ###
+### わかりやすいように変数名の末尾に使用する空間数（リストの長さ）を記述する。
+# 全部通常ブロック
+ALL_NORMAL_30 = [NORMAL]*30
+# 両端通常ブロック
+EDGE_30 = [NORMAL] + [None]*28 + [NORMAL]
+# 空白、上下重力ブロック、空白
+GLAVUD_3 = [None, GLAVUD, None]
+# 空白、上下重力ブロックx2、空白
+GLAVUD2_4 = [None, GLAVUD, GLAVUD, None]
+
+
+### ステージ ###
 class Stage6:
     # 名前
     name = 'STAGE 6'
@@ -25,7 +42,7 @@ class Stage6:
     next_stage = None
 
     # ゴールの座標
-    goal_pos = (10, 8)
+    goal_pos = (10, 7)
 
     # キャラの初期位置
     obake_pos = (10, 5)
@@ -35,13 +52,14 @@ class Stage6:
 
     # ブロック配置
     blocks = {
-        10: [NORMAL] + [None]*3 + [NORMAL]*22 + [None]*3 + [NORMAL],
-        9: [NORMAL] + [None]*28 + [NORMAL],
+        11: EDGE_30,
+        10: [NORMAL] + [None]*3 + [NORMAL]*4 + [DARK]*4 + [NORMAL]*6 + GLAVUD2_4 + [NORMAL]*4 + [None]*3 + [NORMAL],
+        9: EDGE_30,
         8: [NORMAL] + [None]*10 + [NORMAL] + [None]*17 + [NORMAL],
-        7: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*8 + [None]*2 + [NORMAL]*5 + [None]*3 + [NORMAL],
-        6: [NORMAL] + [None]*28 + [NORMAL],
-        5: [NORMAL] + [None]*28 + [NORMAL],
-        4: [NORMAL] + [DARK]*3 + [NORMAL]*5 + [DARK]*2 + [NORMAL]*8 + [DARK]*2 + [NORMAL]*9,
+        7: [NORMAL] + GLAVUD_3 + [NORMAL]*5 + [None]*2 + [NORMAL]*15 + [None]*3 + [NORMAL],
+        6: EDGE_30,
+        5: EDGE_30,
+        4: [NORMAL] + [DARK]*3 + [NORMAL]*5 + [DARK]*2 + [NORMAL]*19,
     }
 
 
@@ -67,32 +85,32 @@ class Stage5:
     # ブロック配置
     blocks = {
         28: [NORMAL]*13 + [JUMP]*4 + [NORMAL]*13,
-        27: [NORMAL] + [None]*28 + [NORMAL],
-        26: [NORMAL] + [None]*28 + [NORMAL],
-        25: [NORMAL] + [None]*28 + [NORMAL],
-        24: [NORMAL] + [None]*28 + [NORMAL],
-        23: [NORMAL] + [None]*28 + [NORMAL],
-        22: [NORMAL] + [None]*28 + [NORMAL],
-        21: [NORMAL] + [None]*28 + [NORMAL],
-        20: [NORMAL] + [None]*28 + [NORMAL],
-        19: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + [None, GLAVUD, GLAVUD, None] + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
-        18: [NORMAL] + [None]*28 + [NORMAL],
-        17: [NORMAL] + [None]*28 + [NORMAL],
-        16: [NORMAL] + [None]*28 + [NORMAL],
-        15: [NORMAL] + [None]*28 + [NORMAL],
-        14: [NORMAL]*4 + [None, GLAVUD, None] + [NORMAL]*6 + [None]*4 + [NORMAL]*6 + [JUMP]*3 + [NORMAL]*4,
-        13: [NORMAL] + [None]*28 + [NORMAL],
-        12: [NORMAL] + [None]*28 + [NORMAL],
-        11: [NORMAL] + [None]*28 + [NORMAL],
-        10: [NORMAL] + [None]*28 + [NORMAL],
-        9: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + [None, GLAVUD, GLAVUD, None] + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
-        8: [NORMAL] + [None]*28 + [NORMAL],
-        7: [NORMAL] + [None]*28 + [NORMAL],
-        6: [NORMAL] + [None]*28 + [NORMAL],
-        5: [NORMAL] + [None]*28 + [NORMAL],
-        4: [NORMAL] + [None]*28 + [NORMAL],
-        3: [NORMAL] + [None]*28 + [NORMAL],
-        2: [NORMAL] + [None]*28 + [NORMAL],
+        27: EDGE_30,
+        26: EDGE_30,
+        25: EDGE_30,
+        24: EDGE_30,
+        23: EDGE_30,
+        22: EDGE_30,
+        21: EDGE_30,
+        20: EDGE_30,
+        19: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + GLAVUD2_4 + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
+        18: EDGE_30,
+        17: EDGE_30,
+        16: EDGE_30,
+        15: EDGE_30,
+        14: [NORMAL]*4 + GLAVUD_3 + [NORMAL]*6 + [None]*4 + [NORMAL]*6 + [JUMP]*3 + [NORMAL]*4,
+        13: EDGE_30,
+        12: EDGE_30,
+        11: EDGE_30,
+        10: EDGE_30,
+        9: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + GLAVUD2_4 + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
+        8: EDGE_30,
+        7: EDGE_30,
+        6: EDGE_30,
+        5: EDGE_30,
+        4: EDGE_30,
+        3: EDGE_30,
+        2: EDGE_30,
         1: [NORMAL]*4 + [JUMP]*3 + [NORMAL]*16 + [None]*3 + [NORMAL]*4,
     }
 
@@ -124,26 +142,26 @@ class Stage4:
 
     # ブロック配置
     blocks = {
-        25: [NORMAL]*30,
-        24: [NORMAL] + [None]*28 + [NORMAL],
-        23: [NORMAL] + [None]*28 + [NORMAL],
-        22: [NORMAL] + [None]*28 + [NORMAL],
-        21: [NORMAL] + [None]*28 + [NORMAL],
-        20: [NORMAL] + [None]*28 + [NORMAL],
+        25: ALL_NORMAL_30,
+        24: EDGE_30,
+        23: EDGE_30,
+        22: EDGE_30,
+        21: EDGE_30,
+        20: EDGE_30,
         19: [NORMAL] + [None]*4 + [NORMAL]*9 + [None]*2 + [NORMAL]*9 + [None]*4 + [NORMAL],
         18: [NORMAL] + [None]*7 + [NORMAL]*6 + [None]*5 + [NORMAL]*6 + [None]*4 + [NORMAL],
-        17: [NORMAL] + [None]*28 + [NORMAL],
-        16: [NORMAL] + [None]*28 + [NORMAL],
+        17: EDGE_30,
+        16: EDGE_30,
         15: [NORMAL] + [None]*4 + [DARK]*9 + [None]*2 + [NORMAL]*9 + [None]*4 + [NORMAL],
-        14: [NORMAL] + [None]*28 + [NORMAL],
-        13: [NORMAL] + [None]*28 + [NORMAL],
-        12: [NORMAL] + [None]*28 + [NORMAL],
+        14: EDGE_30,
+        13: EDGE_30,
+        12: EDGE_30,
         11: [NORMAL]*5 + [DARK]*9 + [None]*2 + [NORMAL]*9 + [JUMP]*4 + [NORMAL],
         10: [NORMAL]*14 + [None]*2 + [NORMAL]*14,
         9: [NORMAL]*14 + [None]*2 + [NORMAL]*14,
         8: [NORMAL]*14 + [None]*2 + [NORMAL]*14,
-        7: [NORMAL]*30,
-        6: [NORMAL]*30,
+        7: ALL_NORMAL_30,
+        6: ALL_NORMAL_30,
     }
 
 
@@ -168,11 +186,11 @@ class Stage3:
 
     # ブロック配置
     blocks = {
-        23: [NORMAL]*30,
+        23: ALL_NORMAL_30,
         22: [NORMAL]*7 + [None]*22 + [NORMAL],
         21: [NORMAL]*7 + [None]*22 + [NORMAL],
-        20: [NORMAL] + [None]*28 + [NORMAL],
-        19: [NORMAL] + [None]*28 + [NORMAL],
+        20: EDGE_30,
+        19: EDGE_30,
         18: [NORMAL] + [None]*10 + [NORMAL]*19,
         17: [NORMAL] + [None]*17 + [NORMAL]*12,
         16: [NORMAL] + [None]*17 + [NORMAL]*12,
@@ -182,7 +200,7 @@ class Stage3:
         12: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
         11: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
         10: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
-        9: [NORMAL]*30,
+        9: ALL_NORMAL_30,
     }
 
 
@@ -243,5 +261,5 @@ class Stage1:
         3: [None]*16 + [NORMAL]*4,
         2: [None]*11 + [NORMAL],
         1: [None]*11 + [NORMAL],
-        0: [NORMAL]*30,
+        0: ALL_NORMAL_30,
     }
