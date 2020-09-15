@@ -1,32 +1,59 @@
 import os
 import math
+from ctypes import windll
 import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
 import pygame
 
-from stages import Stage5
+from stages import Stage3
 
 
 # ステージ
-stage = Stage5()
+stage = Stage3()
 
-# ウィンドウサイズ
-WINDOW_HEIGHT = 600
-WINDOW_WIDTH = 600
+# 画面サイズ
+display_w = windll.user32.GetSystemMetrics(0)
+display_h = windll.user32.GetSystemMetrics(1)
 
-# STAGE CLEAR テキストサイズ
-TEXT_SIZE = 60
+if display_w < 900 or display_h < 900:
+	# ウィンドウサイズ
+	WINDOW_HEIGHT = 600
+	WINDOW_WIDTH = 600
 
-# ブロックサイズ
-BLOCK_SIZE = 20
+	# STAGE CLEAR テキストサイズ
+	TEXT_SIZE = 60
 
-# キャラ幅
-IMG_WIDTH = 40
+	# ブロックサイズ
+	BLOCK_SIZE = 20
 
-# 横移動速度
-MOVE_V = 4
-# ジャンプ初速度
-JUMP_V0 = 20
+	# キャラサイズ
+	IMG_WIDTH = 30
+	IMG_HEIGHT = 40
+
+	# 横移動速度
+	MOVE_V = 4
+	# ジャンプ初速度
+	JUMP_V0 = 20
+else:
+	# ウィンドウサイズ
+	WINDOW_HEIGHT = int(600*1.5)
+	WINDOW_WIDTH = int(600*1.5)
+
+	# STAGE CLEAR テキストサイズ
+	TEXT_SIZE = int(60*1.5)
+
+	# ブロックサイズ
+	BLOCK_SIZE = int(20*1.5)
+
+	# キャラサイズ
+	IMG_WIDTH = int(30*1.5)
+	IMG_HEIGHT = int(40*1.5)
+
+	# 横移動速度
+	MOVE_V = 4*1.5
+	# ジャンプ初速度
+	JUMP_V0 = 20*1.5
+	
 # 重力加速度
 GA = JUMP_V0/6
 # ジャンプブロック初速係数
@@ -55,7 +82,7 @@ class Obake:
 
 	def draw(self):
 		'''
-		一辺の長さ IMG_WIDTH の正方形
+		幅 IMG_WIDTH 高さ IMG_HEIGHT の正方形
 		┌ ─ ┐
 		│ o │
 		└ ─ ┘
@@ -298,7 +325,7 @@ def hitting_block_x(obj, width):
 	-----
 	if 文条件式の図
 
-	abs(block.x - obj.x) < (width + BLOCK_SIZE)/2
+	abs(block.x - obj.x) < (width + w)/2
 	
 	width
 	┌ x ┐ ↔ ┌ x ┐
@@ -306,7 +333,7 @@ def hitting_block_x(obj, width):
 	└ ─ ┼ x ┼ ─ ┘
 	    │   │		block
 	    └ ─ ┘
-	  BLOCK_SIZE
+	      w
 	
 	-(h + BLOCK_SIZE) < block.y - obj.y < width/2
 	(obj.y - block.y < h + BLOCK_SIZE) and (block.y - obj.y < width - h)
@@ -322,12 +349,17 @@ def hitting_block_x(obj, width):
 	'''
 	for block in blocks:
 		if obj == block: continue
+		# ブロックが動かせるとき、幅2倍で計算
+		if getattr(block, 'movable', False):
+			w = 2*BLOCK_SIZE
+		else:
+			w = BLOCK_SIZE
 		# obj が動かせるブロックのとき、高さの当たり判定を0に
 		if getattr(obj, 'movable', False):
 			h = 0
 		else:
-			h = width/2
-		if (abs(block.x - obj.x) < (width + BLOCK_SIZE)/2
+			h = IMG_HEIGHT/2
+		if (abs(block.x - obj.x) < (width + w)/2
 				and -(h + BLOCK_SIZE) < block.y - obj.y < width - h):
 			if block.movable:
 				# ブロックが動かせるとき
@@ -386,7 +418,7 @@ def hitting_block_floor(obj, width):
 		if getattr(obj, 'movable', False):
 			h = width
 		else:
-			h = width/2
+			h = IMG_HEIGHT/2
 		if (abs(block.x - obj.x) < (width + w)/2 - 2
 				and block.y - h <= obj.y <= block.y):
 			if (block.param == 'udarrow'
@@ -423,12 +455,12 @@ def hitting_block_ceil():
 		┌ y ┐		↑
 	  ⇡ │   │  BLOCK_SIZE
 	┌ ─ ┼ ─ ┘	↑	↓
-	│ y │   IMG_WIDTH
+	│ y │   IMG_HEIGHT
 	└ ─ ┘ 		↓
 	'''
 	for block in blocks:
 		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2):
+				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2):
 			if block.param == 'udarrow' and glav_dir == 'd':
 				change_gravity('ud')
 			return True
@@ -453,13 +485,13 @@ def on_block(kind):
 		for block in blocks:
 			if (block.param in collection
 					and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-					and block.y - IMG_WIDTH/2 <= obake.y <= block.y):
+					and block.y - IMG_HEIGHT/2 <= obake.y <= block.y):
 				return True
 	elif glav_dir == 'u':
 		for block in blocks:
 			if (block.param in collection
 					and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-					and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2):
+					and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2):
 				return True
 
 
@@ -489,13 +521,14 @@ def change_gravity(kind):
 def judge_goal():
 	if (not stage.clear
 			and abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
-			and abs(obake.y - cv.coords(goal)[1] + BLOCK_SIZE/2) < IMG_WIDTH):
-                clear_snd.play()
-                stage.clear = True
-                cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
-                        text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
-                        justify='center', tag='clear')
-                cv.bind('N', to_next_stage)
+			and abs(obake.y - cv.coords(goal)[1] + BLOCK_SIZE/2) < IMG_HEIGHT):
+				clear_snd.play()
+				stage.clear = True
+				root.title(f'{stage.name} - CLEAR!')
+				cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
+						text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
+						justify='center', tag='clear')
+				cv.bind('N', to_next_stage)
 
 
 def to_next_stage(event):
@@ -524,7 +557,8 @@ def init_game(goal_pos, start_pos, blocks_dict):
 		fill='orange')
 	# インスタンス生成
 	# キャラ
-	obake = Obake(BLOCK_SIZE*start_pos[0], WINDOW_HEIGHT - BLOCK_SIZE*start_pos[1] - IMG_WIDTH/2)
+	obake = Obake(BLOCK_SIZE*start_pos[0],
+		WINDOW_HEIGHT - BLOCK_SIZE*start_pos[1] - IMG_HEIGHT/2)
 	# ブロック
 	blocks = []
 	for y, row in blocks_dict.items():
@@ -555,7 +589,8 @@ def restart_game(*event):
 				del block
 		del blocks[-len(stage.movable_block_pos):]
 	# インスタンス生成
-	obake = Obake(BLOCK_SIZE*stage.obake_pos[0], WINDOW_HEIGHT - BLOCK_SIZE*stage.obake_pos[1] - IMG_WIDTH/2)
+	obake = Obake(BLOCK_SIZE*stage.obake_pos[0],
+		WINDOW_HEIGHT - BLOCK_SIZE*stage.obake_pos[1] - IMG_HEIGHT/2)
 	if hasattr(stage, 'movable_block_pos'):
 		for x, y, param in stage.movable_block_pos:
 			block = Block(BLOCK_SIZE*x,
@@ -567,6 +602,7 @@ if __name__ == '__main__':
 	# 初期描画
 	root = tk.Tk()
 	root.title(stage.name)
+	root.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}+0+0')
 	cv = tk.Canvas(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT, bg='white')
 	cv.pack()
 	cv.focus_set()
@@ -574,7 +610,7 @@ if __name__ == '__main__':
 	# 画像の読み込み
 	# キャラクター
 	obake_img = Image.open('obake.png')
-	obake_img = obake_img.resize((IMG_WIDTH, IMG_WIDTH))
+	obake_img = obake_img.resize((IMG_HEIGHT, IMG_HEIGHT))
 	obake_flip_img = ImageOps.flip(obake_img)		# 上下反転
 	obake_mirror_img = ImageOps.mirror(obake_img)	# 左右反転（右向き）
 	obake_fm_img = ImageOps.mirror(obake_flip_img)	# 上下左右反転

@@ -87,14 +87,14 @@ class Stage4:
         (6, 12, M_NORMAL),
         (13, 12, M_NORMAL),
         (13, 16, M_DARK),
-        (10, 20, M_NORMAL),
-        (20, 20, M_NORMAL)
+        (10, 20, M_DARK),
+        (20, 20, M_DARK)
     ]
 
     # ブロック配置
     blocks = {
         25: [NORMAL]*30,
-        24: [NORMAL]*30,
+        24: [NORMAL] + [None]*28 + [NORMAL],
         23: [NORMAL] + [None]*28 + [NORMAL],
         22: [NORMAL] + [None]*28 + [NORMAL],
         21: [NORMAL] + [None]*28 + [NORMAL],
@@ -143,7 +143,7 @@ class Stage3:
         19: [NORMAL] + [None]*28 + [NORMAL],
         18: [NORMAL] + [None]*28 + [NORMAL],
         17: [NORMAL] + [None]*10 + [NORMAL]*19,
-        16: [NORMAL] + [None]*28 + [NORMAL],
+        16: [NORMAL] + [None]*18 + [NORMAL]*7 + [None]*3 + [NORMAL],
         15: [NORMAL] + [None]*28 + [NORMAL],
         14: [NORMAL] + [None]*28 + [NORMAL],
         13: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
