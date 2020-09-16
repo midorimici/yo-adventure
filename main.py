@@ -27,8 +27,9 @@ if display_w < 900 or display_h < 900:
 	BLOCK_SIZE = 20
 
 	# キャラサイズ
+	IMG_SIZE = 36
 	IMG_WIDTH = 30
-	IMG_HEIGHT = 40
+	IMG_HEIGHT = 30
 
 	# 横移動速度
 	MOVE_V = 4
@@ -46,8 +47,9 @@ else:
 	BLOCK_SIZE = int(20*1.5)
 
 	# キャラサイズ
+	IMG_SIZE = int(36*1.5)
 	IMG_WIDTH = int(30*1.5)
-	IMG_HEIGHT = int(40*1.5)
+	IMG_HEIGHT = int(30*1.5)
 
 	# 横移動速度
 	MOVE_V = 4*1.5
@@ -69,6 +71,8 @@ class Obake:
 	def __init__(self, x, y):
 		self.x = x
 		self.y = y
+		self.width = IMG_WIDTH
+		self.height = IMG_HEIGHT
 		# アニメーションの時刻
 		self.time_x = 0
 		self.time_y = 0
@@ -123,7 +127,7 @@ class Obake:
 		self.x += MOVE_V
 		if not self.flying:
 			self.fall_move()
-		if hitting_block_x(self, IMG_WIDTH):
+		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
 			cv.coords(self.id, self.x, self.y)
@@ -141,7 +145,7 @@ class Obake:
 		self.x -= MOVE_V
 		if not self.flying:
 			self.fall_move()
-		if hitting_block_x(self, IMG_WIDTH):
+		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
 			cv.coords(self.id, self.x, self.y)
@@ -161,9 +165,9 @@ class Obake:
 			if self.y > WINDOW_HEIGHT:
 				# 画面外に出た
 				restart_game()
-			elif hitting_block_floor(self, IMG_WIDTH):
+			elif hitting_block_floor(self):
 				# 床に乗った
-				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE + (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
 				if on_block('dark'):
@@ -181,7 +185,7 @@ class Obake:
 				restart_game()
 			elif hitting_block_ceil():
 				# 床に乗った
-				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE - (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
 				if on_block('dark'):
@@ -213,9 +217,9 @@ class Obake:
 				# 天井に当たった
 				self.fall_move()
 				return
-			elif hitting_block_floor(self, IMG_WIDTH):
+			elif hitting_block_floor(self):
 				# 床に乗った
-				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE + (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
 			else:
@@ -226,13 +230,13 @@ class Obake:
 			if self.y < 0:
 				# 画面外に出た
 				restart_game()
-			elif hitting_block_floor(self, IMG_WIDTH):
+			elif hitting_block_floor(self):
 				# 天井に当たった
 				self.fall_move()
 				return
 			elif hitting_block_ceil():
 				# 床に乗った
-				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE
+				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE - (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
 			else:
@@ -247,6 +251,8 @@ class Block:
 	def __init__(self, x, y, param, movable=False):
 		self.x = x
 		self.y = y
+		self.width = 2*BLOCK_SIZE if movable else BLOCK_SIZE
+		self.height = 2*BLOCK_SIZE if movable else BLOCK_SIZE
 		self.param = param
 		# 動かせるか
 		self.movable = movable
@@ -292,7 +298,7 @@ class Block:
 			# ブロックがキャラの左側にあるとき
 			self.x -= 4
 		self.fall_move()
-		if hitting_block_x(self, 2*BLOCK_SIZE):
+		if hitting_block_x(self):
 			self.x = xtmp
 		cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
 			self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
@@ -302,7 +308,7 @@ class Block:
 		if self.y > WINDOW_HEIGHT:
 			# 画面外に出た
 			cv.delete(self.id)
-		elif hitting_block_floor(self, 2*BLOCK_SIZE):
+		elif hitting_block_floor(self):
 			# 床に乗った
 			self.y = (self.y//BLOCK_SIZE)*BLOCK_SIZE
 			self.time_y = 0
@@ -314,7 +320,7 @@ class Block:
 
 
 # ブロックとの関係を判定する関数
-def hitting_block_x(obj, width):
+def hitting_block_x(obj):
 	'''
 	キャラがブロックに横からぶつかっているかどうか
 
@@ -322,8 +328,6 @@ def hitting_block_x(obj, width):
 	----------
 	obj : obj -> Obake | Block
 		obake または動かせるブロックのオブジェクト．
-	width : int > 0
-		obj の幅．
 	
 	Returns
 	-------
@@ -333,7 +337,7 @@ def hitting_block_x(obj, width):
 	-----
 	if 文条件式の図
 
-	abs(block.x - obj.x) < (width + w)/2
+	abs(block.x - obj.x) < (obj.width + w)/2
 	
 	width
 	┌ x ┐ ↔ ┌ x ┐
@@ -343,12 +347,12 @@ def hitting_block_x(obj, width):
 	    └ ─ ┘
 	      w
 	
-	-(h + BLOCK_SIZE) < block.y - obj.y < width/2
-	(obj.y - block.y < h + BLOCK_SIZE) and (block.y - obj.y < width - h)
+	-(h + BLOCK_SIZE) < block.y - obj.y < obj.height - h
+	(obj.y - block.y < h + BLOCK_SIZE) and (block.y - obj.y < obj.height - h)
 
 	     obj  block
 	h ↕ ┌ y ┐     ↑
-	  ⇣ │ y │   width
+	  ⇣ │ y │   height
 	    └ ─ ┼ y ┐ ↓   ↑
 	      ↕ │   │ BLOCK_SIZE
 	h ↕ ┌ y ┼ ─ ┘     ↓
@@ -367,15 +371,15 @@ def hitting_block_x(obj, width):
 			h = 0
 		else:
 			h = IMG_HEIGHT/2
-		if (abs(block.x - obj.x) < (width + w)/2
-				and -(h + BLOCK_SIZE) < block.y - obj.y < width - h):
+		if (abs(block.x - obj.x) < (obj.width + w)/2
+				and -(h + BLOCK_SIZE) < block.y - obj.y < obj.height - h):
 			if block.movable:
 				# ブロックが動かせるとき
 				block.slide_move()
 			return True
 
 
-def hitting_block_floor(obj, width):
+def hitting_block_floor(obj):
 	'''
 	キャラや動かせるブロックがブロックに上から接しているかどうか
 
@@ -383,8 +387,6 @@ def hitting_block_floor(obj, width):
 	----------
 	obj : obj -> Obake | Block
 		obake または動かせるブロックのオブジェクト．
-	width : int > 0
-		obj の幅．
 	
 	Returns
 	-------
@@ -394,7 +396,7 @@ def hitting_block_floor(obj, width):
 	-----
 	if 文条件式の図
 
-	abs(block.x - obj.x) < (width + w)/2 - 2
+	abs(block.x - obj.x) < (obj.width + w)/2 - 2
 
 	width
 	┌ x ┐ ↔ ┌ x ┐
@@ -424,10 +426,10 @@ def hitting_block_floor(obj, width):
 			w = BLOCK_SIZE
 		# obj が動かせるブロックのとき、高さの当たり判定を2倍に
 		if getattr(obj, 'movable', False):
-			h = width
+			h = obj.height
 		else:
-			h = IMG_HEIGHT/2
-		if (abs(block.x - obj.x) < (width + w)/2 - 2
+			h = obj.height/2
+		if (abs(block.x - obj.x) < (obj.width + w)/2 - 2
 				and block.y - h <= obj.y <= block.y):
 			if (block.param == 'udarrow'
 					and not getattr(obj, 'movable', False)
@@ -458,7 +460,7 @@ def hitting_block_ceil():
 	└ ─ ┘ ↔ └ ─ ┘
 		  IMG_WIDTH
 	
-	block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_WIDTH/2
+	block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2
 
 		┌ y ┐		↑
 	  ⇡ │   │  BLOCK_SIZE
@@ -618,7 +620,7 @@ if __name__ == '__main__':
 	# 画像の読み込み
 	# キャラクター
 	obake_img = Image.open('obake.png')
-	obake_img = obake_img.resize((IMG_HEIGHT, IMG_HEIGHT))
+	obake_img = obake_img.resize((IMG_SIZE, IMG_SIZE))
 	obake_flip_img = ImageOps.flip(obake_img)		# 上下反転
 	obake_mirror_img = ImageOps.mirror(obake_img)	# 左右反転（右向き）
 	obake_fm_img = ImageOps.mirror(obake_flip_img)	# 上下左右反転

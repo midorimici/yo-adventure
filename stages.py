@@ -52,10 +52,15 @@ class Stage6:
 
     # ブロック配置
     blocks = {
+        16: [NORMAL] + [None]*3 + [NORMAL]*14 + [DARK]*4 + [NORMAL]*4 + [None]*3 + [NORMAL],
+        15: EDGE_30,
+        14: EDGE_30,
+        13: [NORMAL]*8 + [None]*4 + [NORMAL]*6 + [None]*4 + [DARK]*4 + [NORMAL]*4,
+        12: EDGE_30,
         11: EDGE_30,
-        10: [NORMAL] + [None]*3 + [NORMAL]*4 + [DARK]*4 + [NORMAL]*6 + GLAVUD2_4 + [NORMAL]*4 + [None]*3 + [NORMAL],
-        9: EDGE_30,
-        8: [NORMAL] + [None]*10 + [NORMAL] + [None]*17 + [NORMAL],
+        10: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*7 + GLAVUD2_4 + [NORMAL]*4 + [None]*3 + [NORMAL],
+        9: [NORMAL] + [None]*7 + [NORMAL] + [None]*2 + [NORMAL] + [None]*17 + [NORMAL],
+        8: [NORMAL] + [None]*7 + [NORMAL] + [None]*2 + [NORMAL] + [None]*17 + [NORMAL],
         7: [NORMAL] + GLAVUD_3 + [NORMAL]*5 + [None]*2 + [NORMAL]*15 + [None]*3 + [NORMAL],
         6: EDGE_30,
         5: EDGE_30,
@@ -194,7 +199,7 @@ class Stage3:
         18: [NORMAL] + [None]*10 + [NORMAL]*19,
         17: [NORMAL] + [None]*17 + [NORMAL]*12,
         16: [NORMAL] + [None]*17 + [NORMAL]*12,
-        15: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
+        15: EDGE_30,
         14: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*13 + [NORMAL],
         13: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
         12: [NORMAL] + [None]*13 + [NORMAL]*2 + [None]*4 + [NORMAL]*5 + [None]*4 + [NORMAL],
