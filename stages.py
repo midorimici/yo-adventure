@@ -48,14 +48,23 @@ class Stage6:
     obake_pos = (10, 5)
 
     # 動かせるブロックの位置
-    # movable_block_pos = []
+    movable_block_pos = [(15, 17, GLAVUD)]
 
     # ブロック配置
     blocks = {
-        16: [NORMAL] + [None]*3 + [NORMAL]*14 + [DARK]*4 + [NORMAL]*4 + [None]*3 + [NORMAL],
-        15: EDGE_30,
-        14: EDGE_30,
-        13: [NORMAL]*8 + [None]*4 + [NORMAL]*6 + [None]*4 + [DARK]*4 + [NORMAL]*4,
+        25: [NORMAL]*26 + [DARK]*3 + [NORMAL],
+        24: EDGE_30,
+        23: EDGE_30,
+        22: [NORMAL] + [None]*3 + [NORMAL]*22 + [None]*3 + [NORMAL],
+        21: EDGE_30,
+        20: EDGE_30,
+        19: [NORMAL] + [DARK]*3 + [NORMAL]*14 + [None]*4 + [NORMAL]*4 + [None]*3 + [NORMAL],
+        18: [NORMAL] + [None]*24 + [NORMAL] + [None]*3 + [NORMAL],
+        17: [NORMAL] + [None]*24 + [NORMAL] + [None]*3 + [NORMAL],
+        16: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*7 + [DARK]*4 + [NORMAL]*4 + [None]*3 + [NORMAL],
+        15: [NORMAL] + [None]*16 + [NORMAL] + [None]*11 + [NORMAL],
+        14: [NORMAL] + [None]*16 + [NORMAL] + [None]*11 + [NORMAL],
+        13: [NORMAL]*13 + [None]*4 + [NORMAL] + [None]*4 + [DARK]*4 + [NORMAL]*4,
         12: EDGE_30,
         11: EDGE_30,
         10: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*7 + GLAVUD2_4 + [NORMAL]*4 + [None]*3 + [NORMAL],

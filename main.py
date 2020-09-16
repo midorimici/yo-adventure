@@ -272,9 +272,13 @@ class Block:
 		└ ─ ┘
 		'''
 		if self.movable:
-			self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y,
-				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE,
-				fill=self.param)
+			if 'arrow' in self.param:
+				if self.param == 'udarrow': _img = udarrow2_tkimg
+				self.id = cv.create_image(self.x, self.y + BLOCK_SIZE, image=_img)
+			else:
+				self.id = cv.create_rectangle(self.x - BLOCK_SIZE, self.y,
+					self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE,
+					fill=self.param)
 		else:
 			if 'arrow' in self.param:
 				if self.param == 'udarrow': _img = udarrow_tkimg
@@ -300,8 +304,11 @@ class Block:
 		self.fall_move()
 		if hitting_block_x(self):
 			self.x = xtmp
-		cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
-			self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
+		if 'arrow' in self.param:
+			cv.coords(self.id, self.x, self.y + BLOCK_SIZE)
+		else:
+			cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
+				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
 	
 	def fall_move(self):
 		self.y += min(GA*self.time_y, 20)
@@ -315,8 +322,11 @@ class Block:
 		else:
 			self.time_y += 1
 			root.after(50, self.fall_move)
-		cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
-			self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
+		if 'arrow' in self.param:
+			cv.coords(self.id, self.x, self.y + BLOCK_SIZE)
+		else:
+			cv.coords(self.id, self.x - BLOCK_SIZE, self.y,
+				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
 
 
 # ブロックとの関係を判定する関数
@@ -631,7 +641,9 @@ if __name__ == '__main__':
 	# 重力ブロック
 	udarrow_img = Image.open('updownarrow.png')
 	udarrow_img = udarrow_img.resize((BLOCK_SIZE, BLOCK_SIZE))
+	udarrow2_img = udarrow_img.resize((BLOCK_SIZE*2, BLOCK_SIZE*2))
 	udarrow_tkimg = ImageTk.PhotoImage(udarrow_img)
+	udarrow2_tkimg = ImageTk.PhotoImage(udarrow2_img)
 
 	# メニューバー
 	menubar = tk.Menu(root)
