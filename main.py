@@ -12,13 +12,13 @@ from stages import Stage6
 stage = Stage6()
 
 # 画面サイズ
-display_w = windll.user32.GetSystemMetrics(0)
-display_h = windll.user32.GetSystemMetrics(1)
+DISP_W = windll.user32.GetSystemMetrics(0)
+DISP_H = windll.user32.GetSystemMetrics(1)
 
-if display_w < 900 or display_h < 900:
+if DISP_W < 900 or DISP_H < 900:
 	# ウィンドウサイズ
-	WINDOW_HEIGHT = 600
 	WINDOW_WIDTH = 600
+	WINDOW_HEIGHT = 600
 
 	# STAGE CLEAR テキストサイズ
 	TEXT_SIZE = 60
@@ -37,8 +37,8 @@ if display_w < 900 or display_h < 900:
 	JUMP_V0 = 20
 else:
 	# ウィンドウサイズ
-	WINDOW_HEIGHT = int(600*1.5)
 	WINDOW_WIDTH = int(600*1.5)
+	WINDOW_HEIGHT = int(600*1.5)
 
 	# STAGE CLEAR テキストサイズ
 	TEXT_SIZE = int(60*1.5)
@@ -56,14 +56,15 @@ else:
 	# ジャンプ初速度
 	JUMP_V0 = 20*1.5
 	
-# 重力加速度
-GA = JUMP_V0/6
 # ジャンプブロック初速係数
 JUMP_M = 6
 
+# 重力加速度
+ga = JUMP_V0/6
+
 # 重力の方向
 # u: ↑, d: ↓, l: ←, r: →
-glav_dir = 'd'
+grav_dir = 'd'
 
 
 # キャラクター
@@ -104,9 +105,9 @@ class Obake:
 		if self.time_x > 0 and self.isdark: return
 		# 画像左右反転
 		self.delete()
-		if glav_dir == 'd':
+		if grav_dir == 'd':
 			self.id = cv.create_image(self.x, self.y, image=obake_mirror_tkimg)
-		elif glav_dir == 'u':
+		elif grav_dir == 'u':
 			self.id = cv.create_image(self.x, self.y, image=obake_fm_tkimg)
 		self.time_x = 0
 		self.r_move()
@@ -115,9 +116,9 @@ class Obake:
 		if self.time_x > 0 and self.isdark: return
 		# 画像左右反転
 		self.delete()
-		if glav_dir == 'd':
+		if grav_dir == 'd':
 			self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
-		elif glav_dir == 'u':
+		elif grav_dir == 'u':
 			self.id = cv.create_image(self.x, self.y, image=obake_flip_tkimg)
 		self.time_x = 0
 		self.l_move()
@@ -159,8 +160,8 @@ class Obake:
 		judge_goal()
 	
 	def fall_move(self):
-		dy = min(GA*self.time_y, 20)
-		if glav_dir == 'd':
+		dy = min(ga*self.time_y, 20)
+		if grav_dir == 'd':
 			self.y += dy
 			if self.y > WINDOW_HEIGHT:
 				# 画面外に出た
@@ -178,7 +179,7 @@ class Obake:
 				self.flying = True
 				self.time_y += 1
 				root.after(50, self.fall_move)
-		elif glav_dir == 'u':
+		elif grav_dir == 'u':
 			self.y -= dy
 			if self.y < 0:
 				# 画面外に出た
@@ -207,8 +208,8 @@ class Obake:
 	
 	def jump_move(self):
 		v0 = JUMP_M*JUMP_V0 if on_block('jump') else JUMP_V0
-		dy = max(v0 - GA*self.time_y, -20)
-		if glav_dir == 'd':
+		dy = max(v0 - ga*self.time_y, -20)
+		if grav_dir == 'd':
 			self.y -= dy
 			if self.y > WINDOW_HEIGHT:
 				# 画面外に出た
@@ -225,7 +226,7 @@ class Obake:
 			else:
 				self.time_y += 1
 				root.after(50, self.jump_move)
-		elif glav_dir == 'u':
+		elif grav_dir == 'u':
 			self.y += dy
 			if self.y < 0:
 				# 画面外に出た
@@ -311,7 +312,7 @@ class Block:
 				self.x + BLOCK_SIZE, self.y + 2*BLOCK_SIZE)
 	
 	def fall_move(self):
-		self.y += min(GA*self.time_y, 20)
+		self.y += min(ga*self.time_y, 20)
 		if self.y > WINDOW_HEIGHT:
 			# 画面外に出た
 			cv.delete(self.id)
@@ -443,7 +444,7 @@ def hitting_block_floor(obj):
 				and block.y - h <= obj.y <= block.y):
 			if (block.param == 'udarrow'
 					and not getattr(obj, 'movable', False)
-					and glav_dir == 'u'):
+					and grav_dir == 'u'):
 				change_gravity('ud')
 			return True
 
@@ -481,7 +482,7 @@ def hitting_block_ceil():
 	for block in blocks:
 		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2):
-			if block.param == 'udarrow' and glav_dir == 'd':
+			if block.param == 'udarrow' and grav_dir == 'd':
 				change_gravity('ud')
 			return True
 
@@ -501,13 +502,13 @@ def on_block(kind):
 	'''
 	if kind == 'jump': collection = 'gold2'
 	elif kind == 'dark': collection = ['purple4', 'MediumPurple4']
-	if glav_dir == 'd':
+	if grav_dir == 'd':
 		for block in blocks:
 			if (block.param in collection
 					and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
 					and block.y - IMG_HEIGHT/2 <= obake.y <= block.y):
 				return True
-	elif glav_dir == 'u':
+	elif grav_dir == 'u':
 		for block in blocks:
 			if (block.param in collection
 					and abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
@@ -523,15 +524,15 @@ def change_gravity(kind):
 	kind : str -> 'ud' | 'cw' | 'acw'
 		方向変化の種類．
 	'''
-	global glav_dir
+	global grav_dir
 	if kind == 'ud':
-		if glav_dir == 'd':
-			glav_dir = 'u'
+		if grav_dir == 'd':
+			grav_dir = 'u'
 			obake.delete()
 			obake.id = cv.create_image(obake.x, obake.y, image=obake_flip_tkimg)
 			obake.y += BLOCK_SIZE
-		elif glav_dir == 'u':
-			glav_dir = 'd'
+		elif grav_dir == 'u':
+			grav_dir = 'd'
 			obake.delete()
 			obake.id = cv.create_image(obake.x, obake.y, image=obake_tkimg)
 			obake.y -= BLOCK_SIZE
@@ -556,12 +557,12 @@ def to_next_stage(event):
 	if stage.clear:
 		stage = stage.next_stage()
 		root.title(stage.name)
-		init_game(stage.goal_pos, stage.obake_pos, stage.blocks)
+		init_game(stage.goal_pos, stage.obake_pos)
 
 
-def init_game(goal_pos, start_pos, blocks_dict):
-	global glav_dir, goal, obake, blocks
-	glav_dir = 'd'
+def init_game(goal_pos, start_pos):
+	global grav_dir, goal, obake, blocks
+	grav_dir = 'd'
 	cv.delete('all')
 	# インスタンス削除
 	if obake is not None:
@@ -579,24 +580,27 @@ def init_game(goal_pos, start_pos, blocks_dict):
 	# キャラ
 	obake = Obake(BLOCK_SIZE*start_pos[0],
 		WINDOW_HEIGHT - BLOCK_SIZE*start_pos[1] - IMG_HEIGHT/2)
+	# 看板
+	for x, y, img_name in getattr(stage, 'signs', []):
+		cv.create_image(BLOCK_SIZE*x,
+			WINDOW_HEIGHT - BLOCK_SIZE*(y + 1.4), image=sign_img[img_name])
 	# ブロック
 	blocks = []
-	for y, row in blocks_dict.items():
+	for y, row in stage.blocks.items():
 		for i, param in enumerate(row):
 			if param is not None:
 				block = Block(BLOCK_SIZE*(i + 1/2),
 					WINDOW_HEIGHT - BLOCK_SIZE*(y + 1), param)
 				blocks.append(block)
-	if hasattr(stage, 'movable_block_pos'):
-		for x, y, param in stage.movable_block_pos:
-			block = Block(BLOCK_SIZE*x,
-				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
-			blocks.append(block)
+	for x, y, param in getattr(stage, 'movable_block_pos', []):
+		block = Block(BLOCK_SIZE*x,
+			WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
+		blocks.append(block)
 
 
 def restart_game(*event):
-	global glav_dir, obake
-	glav_dir = 'd'
+	global grav_dir, obake
+	grav_dir = 'd'
 	# クリア文字消去
 	cv.delete('clear')
 	# もとのインスタンスを削除
@@ -607,15 +611,14 @@ def restart_game(*event):
 			if block.movable:
 				cv.delete(block.id)
 				del block
-		del blocks[-len(stage.movable_block_pos):]
+		del blocks[-len(getattr(stage, 'movable_block_pos', [])):]
 	# インスタンス生成
 	obake = Obake(BLOCK_SIZE*stage.obake_pos[0],
 		WINDOW_HEIGHT - BLOCK_SIZE*stage.obake_pos[1] - IMG_HEIGHT/2)
-	if hasattr(stage, 'movable_block_pos'):
-		for x, y, param in stage.movable_block_pos:
-			block = Block(BLOCK_SIZE*x,
-				WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
-			blocks.append(block)
+	for x, y, param in getattr(stage, 'movable_block_pos', []):
+		block = Block(BLOCK_SIZE*x,
+			WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
+		blocks.append(block)
 
 
 if __name__ == '__main__':
@@ -629,7 +632,7 @@ if __name__ == '__main__':
 
 	# 画像の読み込み
 	# キャラクター
-	obake_img = Image.open('obake.png')
+	obake_img = Image.open('./img/obake.png')
 	obake_img = obake_img.resize((IMG_SIZE, IMG_SIZE))
 	obake_flip_img = ImageOps.flip(obake_img)		# 上下反転
 	obake_mirror_img = ImageOps.mirror(obake_img)	# 左右反転（右向き）
@@ -639,11 +642,31 @@ if __name__ == '__main__':
 	obake_mirror_tkimg = ImageTk.PhotoImage(obake_mirror_img)
 	obake_fm_tkimg = ImageTk.PhotoImage(obake_fm_img)
 	# 重力ブロック
-	udarrow_img = Image.open('updownarrow.png')
+	udarrow_img = Image.open('./img/updownarrow.png')
 	udarrow_img = udarrow_img.resize((BLOCK_SIZE, BLOCK_SIZE))
 	udarrow2_img = udarrow_img.resize((BLOCK_SIZE*2, BLOCK_SIZE*2))
 	udarrow_tkimg = ImageTk.PhotoImage(udarrow_img)
 	udarrow2_tkimg = ImageTk.PhotoImage(udarrow2_img)
+	# 看板
+	triple_size = (BLOCK_SIZE*3, BLOCK_SIZE*3)
+	dsc_J_img = Image.open(f'./img/dsc_J.png').resize(triple_size)
+	dsc_K_img = Image.open(f'./img/dsc_K.png').resize(triple_size)
+	dsc_L_img = Image.open(f'./img/dsc_L.png').resize(triple_size)
+	dsc_dash_img = Image.open(f'./img/dsc_dash.png').resize(triple_size)
+	dsc_push_img = Image.open(f'./img/dsc_push.png').resize(triple_size)
+	dsc_dark_img = Image.open(f'./img/dsc_dark.png').resize(triple_size)
+	dsc_gravity_img = Image.open(f'./img/dsc_gravity.png').resize(triple_size)
+	dsc_J_tkimg = ImageTk.PhotoImage(dsc_J_img)
+	dsc_K_tkimg = ImageTk.PhotoImage(dsc_K_img)
+	dsc_L_tkimg = ImageTk.PhotoImage(dsc_L_img)
+	dsc_dash_tkimg = ImageTk.PhotoImage(dsc_dash_img)
+	dsc_push_tkimg = ImageTk.PhotoImage(dsc_push_img)
+	dsc_dark_tkimg = ImageTk.PhotoImage(dsc_dark_img)
+	dsc_gravity_tkimg = ImageTk.PhotoImage(dsc_gravity_img)
+	# 画像名と画像の対応
+	sign_img = {'dsc_J': dsc_J_tkimg, 'dsc_K': dsc_K_tkimg, 'dsc_L': dsc_L_tkimg,
+		'dsc_dash': dsc_dash_tkimg, 'dsc_push': dsc_push_tkimg,
+		'dsc_dark': dsc_dark_tkimg, 'dsc_gravity': dsc_gravity_tkimg}
 
 	# メニューバー
 	menubar = tk.Menu(root)
@@ -656,7 +679,7 @@ if __name__ == '__main__':
 	# 初期化
 	obake = None
 	blocks = []
-	init_game(stage.goal_pos, stage.obake_pos, stage.blocks)
+	init_game(stage.goal_pos, stage.obake_pos)
 
 	# 音声の設定
 	pygame.mixer.init()

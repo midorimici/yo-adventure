@@ -15,7 +15,7 @@ DARK = 'purple4'
 # 動かせるジャンプ・ダッシュ禁止ブロック
 M_DARK = 'MediumPurple4'
 # 重力ブロック
-GLAVUD = 'udarrow'
+GRAVUD = 'udarrow'
 
 
 ### ブロック群 ###
@@ -25,9 +25,10 @@ ALL_NORMAL_30 = [NORMAL]*30
 # 両端通常ブロック
 EDGE_30 = [NORMAL] + [None]*28 + [NORMAL]
 # 空白、上下重力ブロック、空白
-GLAVUD_3 = [None, GLAVUD, None]
+GRAVUD_3 = [None, GRAVUD, None]
 # 空白、上下重力ブロックx2、空白
-GLAVUD2_4 = [None, GLAVUD, GLAVUD, None]
+GRAVUD2_4 = [None, GRAVUD, GRAVUD, None]
+
 
 
 ### ステージ ###
@@ -48,7 +49,7 @@ class Stage6:
     obake_pos = (10, 5)
 
     # 動かせるブロックの位置
-    movable_block_pos = [(15, 17, GLAVUD)]
+    movable_block_pos = [(15, 17, GRAVUD)]
 
     # ブロック配置
     blocks = {
@@ -67,10 +68,10 @@ class Stage6:
         13: [NORMAL]*13 + [None]*4 + [NORMAL] + [None]*4 + [DARK]*4 + [NORMAL]*4,
         12: EDGE_30,
         11: EDGE_30,
-        10: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*7 + GLAVUD2_4 + [NORMAL]*4 + [None]*3 + [NORMAL],
+        10: [NORMAL] + [None]*3 + [NORMAL]*5 + [None]*2 + [NORMAL]*7 + GRAVUD2_4 + [NORMAL]*4 + [None]*3 + [NORMAL],
         9: [NORMAL] + [None]*7 + [NORMAL] + [None]*2 + [NORMAL] + [None]*17 + [NORMAL],
         8: [NORMAL] + [None]*7 + [NORMAL] + [None]*2 + [NORMAL] + [None]*17 + [NORMAL],
-        7: [NORMAL] + GLAVUD_3 + [NORMAL]*5 + [None]*2 + [NORMAL]*15 + [None]*3 + [NORMAL],
+        7: [NORMAL] + GRAVUD_3 + [NORMAL]*5 + [None]*2 + [NORMAL]*15 + [None]*3 + [NORMAL],
         6: EDGE_30,
         5: EDGE_30,
         4: [NORMAL] + [DARK]*3 + [NORMAL]*5 + [DARK]*2 + [NORMAL]*19,
@@ -93,6 +94,9 @@ class Stage5:
     # キャラの初期位置
     obake_pos = (20, 10)
 
+    # 説明の看板
+    signs = [(10, 10, 'dsc_gravity')]
+
     # 動かせるブロックの位置
     movable_block_pos = [(3, 2, M_NORMAL), (16, 20, M_NORMAL)]
 
@@ -107,17 +111,17 @@ class Stage5:
         22: EDGE_30,
         21: EDGE_30,
         20: EDGE_30,
-        19: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + GLAVUD2_4 + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
+        19: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + GRAVUD2_4 + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
         18: EDGE_30,
         17: EDGE_30,
         16: EDGE_30,
         15: EDGE_30,
-        14: [NORMAL]*4 + GLAVUD_3 + [NORMAL]*6 + [None]*4 + [NORMAL]*6 + [JUMP]*3 + [NORMAL]*4,
+        14: [NORMAL]*4 + GRAVUD_3 + [NORMAL]*6 + [None]*4 + [NORMAL]*6 + [JUMP]*3 + [NORMAL]*4,
         13: EDGE_30,
         12: EDGE_30,
         11: EDGE_30,
         10: EDGE_30,
-        9: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + GLAVUD2_4 + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
+        9: [NORMAL]*4 + [None]*3 + [NORMAL]*6 + GRAVUD2_4 + [NORMAL]*6 + [None]*3 + [NORMAL]*4,
         8: EDGE_30,
         7: EDGE_30,
         6: EDGE_30,
@@ -144,6 +148,9 @@ class Stage4:
 
     # キャラの初期位置
     obake_pos = (10, 12)
+
+    # 説明の看板
+    signs = [(20, 12, 'dsc_dark')]
 
     # 動かせるブロックの位置
     movable_block_pos = [
@@ -195,6 +202,9 @@ class Stage3:
     # キャラの初期位置
     obake_pos = (21, 14)
 
+    # 説明の看板
+    signs = [(15, 19, 'dsc_push')]
+
     # 動かせるブロックの位置
     movable_block_pos = [(5, 10, M_JUMP), (6, 12, M_NORMAL), (8, 10, M_NORMAL), (24, 14, M_NORMAL)]
 
@@ -234,6 +244,9 @@ class Stage2:
     # キャラの初期位置
     obake_pos = (3, 1)
 
+    # 説明の看板
+    signs = [(5, 1, 'dsc_dash')]
+
     # ブロック配置
     blocks = {
         17: [None]*8 + [NORMAL, JUMP],
@@ -262,6 +275,9 @@ class Stage1:
 
     # キャラの初期位置
     obake_pos = (3, 1)
+
+    # 説明の看板
+    signs = [(22, 1, 'dsc_J'), (25, 1, 'dsc_K'), (28, 1, 'dsc_L')]
 
     # ブロック配置
     blocks = {
