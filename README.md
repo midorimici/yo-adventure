@@ -18,6 +18,10 @@ Python 3.8.3 / Windows 64 bit で動作を確認しています。
 
 Python が使える環境で、`python main.py`とコマンド入力すれば起動します。
 
+途中から始めたい場合は、コマンドライン引数を指定します。
+
+例えば Stage 5 から始めたい場合は`python main.py 5`のようにします。
+
 ## 操作方法
 
 - `J` : 左←へ移動
@@ -25,17 +29,6 @@ Python が使える環境で、`python main.py`とコマンド入力すれば起
 - `K` : ジャンプ↑
 - `shift + R` : ステージをリセット
 - `shift + N` : 次のステージへ
-
-途中から始めたい場合は、`main.py`の冒頭にある記述を変更します。
-
-例えば Stage 10 から始めたい場合は次のようにします。
-
-```
-from stages import Stage1   # -> ... import Stage10
-
-# ステージ
-stage = Stage1()            # -> ... = Stage10()
-```
 
 ## その他
 

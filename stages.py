@@ -293,3 +293,6 @@ class Stage1:
         1: [None]*11 + [NORMAL],
         0: ALL_NORMAL_30,
     }
+
+
+stages_dict = {1: Stage1, 2: Stage2, 3: Stage3, 4: Stage4, 5: Stage5, 6: Stage6}

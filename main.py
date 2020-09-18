@@ -1,15 +1,13 @@
-import os
+import sys
 import math
 from ctypes import windll
 import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
 import pygame
 
-from stages import Stage6
+import stages
 
 
-# ステージ
-stage = Stage6()
 
 # 画面サイズ
 DISP_W = windll.user32.GetSystemMetrics(0)
@@ -622,6 +620,13 @@ def restart_game(*event):
 
 
 if __name__ == '__main__':
+	# ステージ
+	args = sys.argv
+	if len(args) >= 2 and args[1].isdigit():
+		stage = stages.stages_dict[int(args[1])]()
+	else:
+		stage = stages.Stage1()
+	
 	# 初期描画
 	root = tk.Tk()
 	root.title(stage.name)
