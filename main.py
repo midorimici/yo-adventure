@@ -3,9 +3,12 @@ import math
 from ctypes import windll
 import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
+
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
-import stages
+from stages import Stage1, stages_dict
 
 
 
@@ -552,7 +555,7 @@ def judge_goal():
 
 def to_next_stage(event):
 	global stage
-	if stage.clear:
+	if stage.clear and stage.next_stage is not None:
 		stage = stage.next_stage()
 		root.title(stage.name)
 		init_game(stage.goal_pos, stage.obake_pos)
@@ -623,9 +626,13 @@ if __name__ == '__main__':
 	# ステージ
 	args = sys.argv
 	if len(args) >= 2 and args[1].isdigit():
-		stage = stages.stages_dict[int(args[1])]()
+		if int(args[1]) in stages_dict:
+			stage = stages_dict[int(args[1])]()
+		else:
+			print('不正なコマンドライン引数です。1 ~ 6 の整数値を指定してください。')
+			sys.exit()
 	else:
-		stage = stages.Stage1()
+		stage = Stage1()
 	
 	# 初期描画
 	root = tk.Tk()
