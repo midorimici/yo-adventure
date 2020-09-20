@@ -655,7 +655,7 @@ if __name__ == '__main__':
 		if int(args[1]) in stages_dict:
 			stage = stages_dict[int(args[1])]()
 		else:
-			print('不正なコマンドライン引数です。1 ~ 6 の整数値を指定してください。')
+			print('不正なコマンドライン引数です。1 ~ 8 の整数値を指定してください。')
 			sys.exit()
 	else:
 		stage = Stage1()

@@ -32,6 +32,49 @@ GRAVUD2_4 = [None, GRAVUD, GRAVUD, None]
 
 
 ### ステージ ###
+class Stage8:
+    # 名前
+    name = 'STAGE 8'
+
+    # クリア済み
+    clear = False
+
+    # 次のステージ
+    next_stage = None
+
+    # ゴールの座標
+    goal_pos = (26, 11)
+
+    # キャラの初期位置
+    obake_pos = (2, 6)
+
+    # 動かせるブロックの位置
+    movable_block_pos = [(4, 21, NORMAL), (8, 6, NORMAL), (8, 8, GRAVUD)]
+
+    # ブロック配置
+    blocks = {
+        23: ALL_NORMAL_30,
+        22: [NORMAL] + [None]*6 + [NORMAL]*23,
+        21: [NORMAL] + [None]*6 + [NORMAL]*23,
+        20: [NORMAL] + [None]*2 + [GRAVUD]*2 + [None]*2 + [NORMAL]*23,
+        19: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [NORMAL]*10 + [NORMAL],
+        18: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [NORMAL]*10 + [NORMAL],
+        17: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [NORMAL]*10 + [NORMAL],
+        16: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        15: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        14: [NORMAL] + [None]*4 + [DARK]*10 + [None]*2 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        13: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        12: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        11: EDGE_30,
+        10: EDGE_30,
+        9: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        8: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        7: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        6: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
+        5: ALL_NORMAL_30,
+    }
+
+
 class Stage7:
     # 名前
     name = 'STAGE 7'
@@ -40,7 +83,7 @@ class Stage7:
     clear = False
 
     # 次のステージ
-    next_stage = None
+    next_stage = Stage8
 
     # ゴールの座標
     goal_pos = (15, 4)
@@ -343,4 +386,4 @@ class Stage1:
 
 
 stages_dict = {1: Stage1, 2: Stage2, 3: Stage3, 4: Stage4, 5: Stage5, 6: Stage6,
-    7: Stage7}
+    7: Stage7, 8: Stage8}
