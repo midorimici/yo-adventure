@@ -219,8 +219,8 @@ class Stage4:
         20: EDGE_30,
         19: [NORMAL] + [None]*4 + [NORMAL]*9 + [None]*2 + [NORMAL]*9 + [None]*4 + [NORMAL],
         18: [NORMAL] + [None]*7 + [NORMAL]*6 + [None]*5 + [NORMAL]*6 + [None]*4 + [NORMAL],
-        17: EDGE_30,
-        16: EDGE_30,
+        17: [NORMAL] + [None]*23 + [DARK] + [None]*4 + [NORMAL],
+        16: [NORMAL] + [None]*23 + [DARK] + [None]*4 + [NORMAL],
         15: [NORMAL] + [None]*4 + [DARK]*9 + [None]*2 + [NORMAL]*9 + [None]*4 + [NORMAL],
         14: EDGE_30,
         13: EDGE_30,
@@ -287,7 +287,7 @@ class Stage2:
     next_stage = Stage3
 
     # ゴールの座標
-    goal_pos = (14, 25)
+    goal_pos = (14, 24)
 
     # キャラの初期位置
     obake_pos = (3, 1)
@@ -297,13 +297,12 @@ class Stage2:
 
     # ブロック配置
     blocks = {
-        17: [None]*8 + [NORMAL, JUMP],
-        16: [None]*20 + [NORMAL]*2,
-        15: [None]*5 + [NORMAL],
+        16: [None]*8 + [NORMAL, JUMP],
         14: [None]*5 + [NORMAL],
-        13: [None]*3 + [NORMAL]*3,
-        9: [None, JUMP] + [NORMAL]*3,
-        8: [None]*6 + [NORMAL]*2 + [JUMP, NORMAL] + [None]*13 + [JUMP] + [NORMAL],
+        13: [None]*5 + [NORMAL],
+        12: [None]*3 + [NORMAL]*3,
+        7: [None, JUMP] + [NORMAL]*3,
+        6: [None]*6 + [NORMAL]*2 + [JUMP, NORMAL] + [None]*13 + [JUMP] + [NORMAL],
         0: [NORMAL]*10 + [None]*10 + [NORMAL]*7 + [JUMP] + [NORMAL]*2,
     }
 

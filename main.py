@@ -35,7 +35,7 @@ if DISP_W < 900 or DISP_H < 900:
 	# 横移動速度
 	MOVE_V = 4
 	# ジャンプ初速度
-	JUMP_V0 = 20
+	JUMP_V0 = 10
 else:
 	# ウィンドウサイズ
 	WINDOW_WIDTH = int(600*1.5)
@@ -55,10 +55,10 @@ else:
 	# 横移動速度
 	MOVE_V = 4*1.5
 	# ジャンプ初速度
-	JUMP_V0 = 20*1.5
+	JUMP_V0 = 10*1.5
 	
 # ジャンプブロック初速係数
-JUMP_M = 6
+JUMP_M = 8.4
 
 # 重力加速度
 ga = JUMP_V0/6
@@ -213,15 +213,15 @@ class Obake:
 	
 	def on_keyrelease_k(self, event):
 		if self._short_press:
-			self.jump(JUMP_V0*2/3)
+			self.jump(JUMP_V0)
 			self._short_press = False
 			root.after_cancel(self._do_long_jump)
 	
 	def on_longpress_k(self):
 		self._short_press = False
 		root.after_cancel(self._do_long_jump)
-		self.jump(JUMP_V0)
-
+		self.jump(JUMP_V0*1.4)
+	
 	def jump(self, vel):
 		if self.flying or on_block('dark'): return
 		jump_snd.play()
@@ -247,7 +247,7 @@ class Obake:
 				self.flying = False
 			else:
 				self.time_y += 1
-				root.after(50, self.jump_move(vel))
+				root.after(50, self.jump_move, vel)
 		elif grav_dir == 'u':
 			self.y += dy
 			if self.y < 0:
@@ -264,7 +264,7 @@ class Obake:
 				self.flying = False
 			else:
 				self.time_y += 1
-				root.after(50, self.jump_move(vel))
+				root.after(50, self.jump_move, vel)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 
