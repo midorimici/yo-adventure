@@ -82,6 +82,10 @@ class Obake:
 		self.flying = False
 		# ダークブロックの影響下
 		self.isdark = False
+
+		# キー操作
+		self._short_press = False
+
 		self.draw()
 		self.bind()
 	
@@ -100,7 +104,8 @@ class Obake:
 	def bind(self):
 		cv.bind("l", self.move_right)
 		cv.bind("j", self.move_left)
-		cv.bind("k", self.jump)
+		cv.bind("<KeyPress-k>", self.on_keypress_k)
+		cv.bind("<KeyRelease-k>", self.on_keyrelease_k)
 
 	def move_right(self, event):
 		if self.time_x > 0 and self.isdark: return
@@ -201,14 +206,30 @@ class Obake:
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
-	def jump(self, event):
+	def on_keypress_k(self, event):
+		if not self._short_press:
+			self._short_press = True
+			self._do_long_jump = root.after(100, self.on_longpress_k)
+	
+	def on_keyrelease_k(self, event):
+		if self._short_press:
+			self.jump(JUMP_V0*2/3)
+			self._short_press = False
+			root.after_cancel(self._do_long_jump)
+	
+	def on_longpress_k(self):
+		self._short_press = False
+		root.after_cancel(self._do_long_jump)
+		self.jump(JUMP_V0)
+
+	def jump(self, vel):
 		if self.flying or on_block('dark'): return
 		jump_snd.play()
 		self.flying = True
-		self.jump_move()
+		self.jump_move(vel)
 	
-	def jump_move(self):
-		v0 = JUMP_M*JUMP_V0 if on_block('jump') else JUMP_V0
+	def jump_move(self, vel):
+		v0 = JUMP_M*vel if on_block('jump') else vel
 		dy = max(v0 - ga*self.time_y, -20)
 		if grav_dir == 'd':
 			self.y -= dy
@@ -226,7 +247,7 @@ class Obake:
 				self.flying = False
 			else:
 				self.time_y += 1
-				root.after(50, self.jump_move)
+				root.after(50, self.jump_move(vel))
 		elif grav_dir == 'u':
 			self.y += dy
 			if self.y < 0:
@@ -243,7 +264,7 @@ class Obake:
 				self.flying = False
 			else:
 				self.time_y += 1
-				root.after(50, self.jump_move)
+				root.after(50, self.jump_move(vel))
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 
@@ -462,9 +483,9 @@ def hitting_block_ceil():
 	-----
 	if 文条件式の図
 
-	abs(block.x - obj.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
+	abs(block.x - obj.x) < (IMG_WIDTH + size)/2 - 2
 
-	  BLOCK_SIZE
+	    size
 		┌ x ┐
 		│   │		block
 	┌ ─ ┼ ─ ┼ ─ ┐
@@ -472,17 +493,22 @@ def hitting_block_ceil():
 	└ ─ ┘ ↔ └ ─ ┘
 		  IMG_WIDTH
 	
-	block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2
+	block.y + size <= obake.y <= block.y + size + IMG_HEIGHT/2
 
 		┌ y ┐		↑
-	  ⇡ │   │  BLOCK_SIZE
+	  ⇡ │   │      size
 	┌ ─ ┼ ─ ┘	↑	↓
 	│ y │   IMG_HEIGHT
 	└ ─ ┘ 		↓
 	'''
 	for block in blocks:
-		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2):
+		# ブロックが動かせるとき、サイズ2倍で計算
+		if getattr(block, 'movable', False):
+			size = BLOCK_SIZE*2
+		else:
+			size = BLOCK_SIZE
+		if (abs(block.x - obake.x) < (IMG_WIDTH + size)/2 - 2
+				and block.y + size <= obake.y <= block.y + size + IMG_HEIGHT/2):
 			if block.param == 'udarrow' and grav_dir == 'd':
 				change_gravity('ud')
 			return True
