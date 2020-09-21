@@ -82,6 +82,9 @@ class Obake:
 		# キャラの向き
 		# l: ←, r: →
 		self.seeing_direction = 'l'
+		# 加減速フラグ
+		# acc: 加速, dec: 減速
+		self.acc_state = 'acc'
 		# アニメーションの時刻
 		self.time_x = 0
 		self.time_y = 0
@@ -93,7 +96,8 @@ class Obake:
 		# 大ジャンプ判定
 		self._do_long_jump = False
 		# キー操作
-		self._short_press_jl = False
+		self._short_press_l = False
+		self._short_press_j = False
 		self._short_press_k = False
 
 		self.draw()
@@ -116,26 +120,31 @@ class Obake:
 		cv.bind("<KeyPress-l>", self.on_keypress_l)
 		cv.bind("<KeyPress-j>", self.on_keypress_j)
 		# キーを離したらストップ
-		cv.bind("<KeyRelease-l>", self.on_keyrelease_jl)
-		cv.bind("<KeyRelease-j>", self.on_keyrelease_jl)
+		cv.bind("<KeyRelease-l>", self.on_keyrelease_l)
+		cv.bind("<KeyRelease-j>", self.on_keyrelease_j)
 		# [K] ちょっとだけ押すと小ジャンプ、長め押しで大ジャンプ
 		cv.bind("<KeyPress-k>", self.on_keypress_k)
 		cv.bind("<KeyRelease-k>", self.on_keyrelease_k)
 	
 	def on_keypress_l(self, event):
-		if not self._short_press_jl:
-			self._short_press_jl = True
+		if not self._short_press_l:
+			self._short_press_l = True
+			self._short_press_j = False
 			self.move_right()
 	
 	def on_keypress_j(self, event):
-		if not self._short_press_jl:
-			self._short_press_jl = True
+		if not self._short_press_j:
+			self._short_press_l = False
+			self._short_press_j = True
 			self.move_left()
-
-	def on_keyrelease_jl(self, event):
-		if self._short_press_jl:
-			if not self.flying: self.stop()
-			self._short_press_jl = False
+	
+	def on_keyrelease_l(self, event):
+		if self._short_press_l:
+			self._short_press_l = False
+	
+	def on_keyrelease_j(self, event):
+		if self._short_press_j:
+			self._short_press_j = False
 	
 	def on_keypress_k(self, event):
 		if not self._short_press_k:
@@ -177,10 +186,19 @@ class Obake:
 	
 	def r_move(self, prev_dx):
 		xtmp = self.x
-		if self.flying:
-			dx = prev_dx
+		if self._short_press_l:
+			# キー押下時
+			if self.flying:
+				# 空中にいるときは速度は不変
+				dx = prev_dx
+			else:
+				# 加速
+				dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
 		else:
-			dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+			# キーを離しているとき減速
+			dx = prev_dx - MOVE_A
+			if dx < 0: return
+
 		self.x += dx
 		if not self.flying:
 			self.fall_move()
@@ -188,7 +206,8 @@ class Obake:
 		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
-			self._short_press_jl = False
+			self._short_press_l = False
+			self._short_press_j = False
 			cv.coords(self.id, self.x, self.y)
 			return
 		self.time_x += 1
@@ -198,10 +217,19 @@ class Obake:
 	
 	def l_move(self, prev_dx):
 		xtmp = self.x
-		if self.flying:
-			dx = prev_dx
+		if self._short_press_j:
+			# キー押下時
+			if self.flying:
+				# 空中にいるときは速度は不変
+				dx = prev_dx
+			else:
+				# 加速
+				dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
 		else:
-			dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+			# キーを離しているとき減速
+			dx = prev_dx - MOVE_A
+			if dx < 0: return
+
 		self.x -= dx
 		if not self.flying:
 			self.fall_move()
@@ -209,7 +237,8 @@ class Obake:
 		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
-			self._short_press_jl = False
+			self._short_press_l = False
+			self._short_press_j = False
 			cv.coords(self.id, self.x, self.y)
 			return
 		self.time_x += 1
@@ -219,7 +248,7 @@ class Obake:
 	
 	def stop(self):
 		root.after_cancel(self._lr_move)
-		self.time_x = -1
+		self.time_x = 0
 
 	def fall_move(self):
 		dy = min(ga*self.time_y, 20)
@@ -233,8 +262,6 @@ class Obake:
 				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE + (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
-				# 空中でキーを離していたとき
-				if not self._short_press_jl: self.stop()
 				if on_block('dark'):
 					self.isdark = True
 				else:
@@ -253,8 +280,6 @@ class Obake:
 				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE - (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
-				# 空中でキーを離していたとき
-				if not self._short_press_jl: self.stop()
 				if on_block('dark'):
 					self.isdark = True
 				else:
