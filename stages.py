@@ -57,9 +57,9 @@ class Stage8:
         22: [NORMAL] + [None]*6 + [NORMAL]*23,
         21: [NORMAL] + [None]*6 + [NORMAL]*23,
         20: [NORMAL] + [None]*2 + [GRAVUD]*2 + [None]*2 + [NORMAL]*23,
-        19: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [NORMAL]*10 + [NORMAL],
-        18: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [NORMAL]*10 + [NORMAL],
-        17: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [NORMAL]*10 + [NORMAL],
+        19: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*23,
+        18: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*23,
+        17: [NORMAL] + [None]*2 + [NORMAL]*2 + [None]*2 + [NORMAL]*12 + [DARK]*10 + [NORMAL],
         16: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
         15: [NORMAL] + [None]*16 + [NORMAL]*2 + [None]*10 + [NORMAL],
         14: [NORMAL] + [None]*4 + [DARK]*10 + [None]*2 + [NORMAL]*2 + [None]*10 + [NORMAL],
@@ -385,6 +385,3 @@ class Stage1:
         0: ALL_NORMAL_30,
     }
 
-
-stages_dict = {1: Stage1, 2: Stage2, 3: Stage3, 4: Stage4, 5: Stage5, 6: Stage6,
-    7: Stage7, 8: Stage8}

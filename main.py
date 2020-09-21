@@ -8,8 +8,7 @@ from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
-from stages import Stage1, stages_dict
-
+import stages
 
 
 # 画面サイズ
@@ -699,13 +698,13 @@ if __name__ == '__main__':
 	# ステージ
 	args = sys.argv
 	if len(args) >= 2 and args[1].isdigit():
-		if int(args[1]) in stages_dict:
-			stage = stages_dict[int(args[1])]()
-		else:
+		stage_class = getattr(stages, f'Stage{int(args[1])}', None)
+		if stage_class is None:
 			print('不正なコマンドライン引数です。1 ~ 8 の整数値を指定してください。')
 			sys.exit()
+		else: stage = stage_class()
 	else:
-		stage = Stage1()
+		stage = stages.Stage1()
 	
 	# 初期描画
 	root = tk.Tk()
