@@ -32,10 +32,14 @@ if DISP_W < 900 or DISP_H < 900:
 	IMG_WIDTH = 30
 	IMG_HEIGHT = 30
 
-	# 横移動速度
-	MOVE_V = 4
+	# 横移動初速さ
+	MOVE_SPEED = 4
+	# 横移動加速度
+	MOVE_A = 1
 	# ジャンプ初速度
-	JUMP_V0 = 10
+	JUMP_V0 = 12
+	# 重力加速度
+	ga = 2.4
 else:
 	# ウィンドウサイズ
 	WINDOW_WIDTH = int(600*1.5)
@@ -52,16 +56,17 @@ else:
 	IMG_WIDTH = int(30*1.5)
 	IMG_HEIGHT = int(30*1.5)
 
-	# 横移動速度
-	MOVE_V = 4*1.5
+	# 横移動初速さ
+	MOVE_SPEED = 4*1.5
+	# 横移動加速度
+	MOVE_A = 1*1.5
 	# ジャンプ初速度
-	JUMP_V0 = 10*1.5
+	JUMP_V0 = 12*1.5
+	# 重力加速度
+	ga = 2.4*1.5
 	
 # ジャンプブロック初速係数
 JUMP_M = 8.4
-
-# 重力加速度
-ga = JUMP_V0/6
 
 # 重力の方向
 # u: ↑, d: ↓, l: ←, r: →
@@ -75,6 +80,9 @@ class Obake:
 		self.y = y
 		self.width = IMG_WIDTH
 		self.height = IMG_HEIGHT
+		# キャラの向き
+		# l: ←, r: →
+		self.seeing_direction = 'l'
 		# アニメーションの時刻
 		self.time_x = 0
 		self.time_y = 0
@@ -83,8 +91,11 @@ class Obake:
 		# ダークブロックの影響下
 		self.isdark = False
 
+		# 大ジャンプ判定
+		self._do_long_jump = False
 		# キー操作
-		self._short_press = False
+		self._short_press_jl = False
+		self._short_press_k = False
 
 		self.draw()
 		self.bind()
@@ -102,69 +113,115 @@ class Obake:
 		self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
 
 	def bind(self):
-		cv.bind("l", self.move_right)
-		cv.bind("j", self.move_left)
+		# [L], [J] 押している間その方向に直線移動
+		cv.bind("<KeyPress-l>", self.on_keypress_l)
+		cv.bind("<KeyPress-j>", self.on_keypress_j)
+		# キーを離したらストップ
+		cv.bind("<KeyRelease-l>", self.on_keyrelease_jl)
+		cv.bind("<KeyRelease-j>", self.on_keyrelease_jl)
+		# [K] ちょっとだけ押すと小ジャンプ、長め押しで大ジャンプ
 		cv.bind("<KeyPress-k>", self.on_keypress_k)
 		cv.bind("<KeyRelease-k>", self.on_keyrelease_k)
+	
+	def on_keypress_l(self, event):
+		if not self._short_press_jl:
+			self._short_press_jl = True
+			self.move_right()
+	
+	def on_keypress_j(self, event):
+		if not self._short_press_jl:
+			self._short_press_jl = True
+			self.move_left()
 
-	def move_right(self, event):
-		if self.time_x > 0 and self.isdark: return
+	def on_keyrelease_jl(self, event):
+		if self._short_press_jl:
+			if not self.flying: self.stop()
+			self._short_press_jl = False
+	
+	def on_keypress_k(self, event):
+		if not self._short_press_k:
+			self._short_press_k = True
+			self._do_long_jump = root.after(100, self.on_longpress_k)
+	
+	def on_keyrelease_k(self, event):
+		if self._short_press_k:
+			self.jump(JUMP_V0)
+			self._short_press_k = False
+			root.after_cancel(self._do_long_jump)
+	
+	def on_longpress_k(self):
+		self._short_press_k = False
+		root.after_cancel(self._do_long_jump)
+		self.jump(JUMP_V0*1.4)
+
+	def move_right(self):
 		# 画像左右反転
 		self.delete()
 		if grav_dir == 'd':
 			self.id = cv.create_image(self.x, self.y, image=obake_mirror_tkimg)
 		elif grav_dir == 'u':
 			self.id = cv.create_image(self.x, self.y, image=obake_fm_tkimg)
+		self.seeing_direction = 'r'
 		self.time_x = 0
-		self.r_move()
+		self.r_move(MOVE_SPEED)
 	
-	def move_left(self, event):
-		if self.time_x > 0 and self.isdark: return
+	def move_left(self):
 		# 画像左右反転
 		self.delete()
 		if grav_dir == 'd':
 			self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
 		elif grav_dir == 'u':
 			self.id = cv.create_image(self.x, self.y, image=obake_flip_tkimg)
+		self.seeing_direction = 'l'
 		self.time_x = 0
-		self.l_move()
+		self.l_move(MOVE_SPEED)
 	
-	def r_move(self):
+	def r_move(self, prev_dx):
 		xtmp = self.x
-		self.x += MOVE_V
+		if self.flying:
+			dx = prev_dx
+		else:
+			dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+		self.x += dx
 		if not self.flying:
 			self.fall_move()
+			if self.time_x == -1: return
 		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
+			self._short_press_jl = False
 			cv.coords(self.id, self.x, self.y)
 			return
-		if self.flying or self.time_x < 5:
-			self.time_x += 1
-			root.after(50, self.r_move)
-		else:
-			self.time_x = 0
+		self.time_x += 1
+		self._lr_move = root.after(50, self.r_move, dx)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
-	def l_move(self):
+	def l_move(self, prev_dx):
 		xtmp = self.x
-		self.x -= MOVE_V
+		if self.flying:
+			dx = prev_dx
+		else:
+			dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+		self.x -= dx
 		if not self.flying:
 			self.fall_move()
+			if self.time_x == -1: return
 		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
+			self._short_press_jl = False
 			cv.coords(self.id, self.x, self.y)
 			return
-		if self.flying or self.time_x < 5:
-			self.time_x += 1
-			root.after(50, self.l_move)
-		else:
-			self.time_x = 0
+		self.time_x += 1
+		self._lr_move = root.after(50, self.l_move, dx)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
+	def stop(self):
+		root.after_cancel(self._lr_move)
+		self.time_x = -1
+
 	def fall_move(self):
 		dy = min(ga*self.time_y, 20)
 		if grav_dir == 'd':
@@ -177,6 +234,8 @@ class Obake:
 				self.y = math.floor(self.y/BLOCK_SIZE)*BLOCK_SIZE + (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
+				# 空中でキーを離していたとき
+				if not self._short_press_jl: self.stop()
 				if on_block('dark'):
 					self.isdark = True
 				else:
@@ -195,6 +254,8 @@ class Obake:
 				self.y = math.ceil(self.y/BLOCK_SIZE)*BLOCK_SIZE - (BLOCK_SIZE - IMG_HEIGHT/2)
 				self.time_y = 0
 				self.flying = False
+				# 空中でキーを離していたとき
+				if not self._short_press_jl: self.stop()
 				if on_block('dark'):
 					self.isdark = True
 				else:
@@ -205,22 +266,6 @@ class Obake:
 				root.after(50, self.fall_move)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
-	
-	def on_keypress_k(self, event):
-		if not self._short_press:
-			self._short_press = True
-			self._do_long_jump = root.after(100, self.on_longpress_k)
-	
-	def on_keyrelease_k(self, event):
-		if self._short_press:
-			self.jump(JUMP_V0)
-			self._short_press = False
-			root.after_cancel(self._do_long_jump)
-	
-	def on_longpress_k(self):
-		self._short_press = False
-		root.after_cancel(self._do_long_jump)
-		self.jump(JUMP_V0*1.4)
 	
 	def jump(self, vel):
 		if self.flying or on_block('dark'): return
@@ -556,12 +601,14 @@ def change_gravity(kind):
 		if grav_dir == 'd':
 			grav_dir = 'u'
 			obake.delete()
-			obake.id = cv.create_image(obake.x, obake.y, image=obake_flip_tkimg)
+			obake.id = cv.create_image(obake.x, obake.y,
+				image=(obake_flip_tkimg if obake.seeing_direction == 'l' else obake_fm_tkimg))
 			obake.y += BLOCK_SIZE
 		elif grav_dir == 'u':
 			grav_dir = 'd'
 			obake.delete()
-			obake.id = cv.create_image(obake.x, obake.y, image=obake_tkimg)
+			obake.id = cv.create_image(obake.x, obake.y,
+				image=(obake_tkimg if obake.seeing_direction == 'l' else obake_mirror_tkimg))
 			obake.y -= BLOCK_SIZE
 
 

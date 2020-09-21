@@ -330,7 +330,7 @@ class Stage2:
     next_stage = Stage3
 
     # ゴールの座標
-    goal_pos = (14, 24)
+    goal_pos = (14, 25)
 
     # キャラの初期位置
     obake_pos = (3, 1)
@@ -340,12 +340,13 @@ class Stage2:
 
     # ブロック配置
     blocks = {
-        16: [None]*8 + [NORMAL, JUMP],
+        17: [None]*8 + [NORMAL, JUMP],
+        16: [None]*20 + [NORMAL]*2,
+        15: [None]*5 + [NORMAL],
         14: [None]*5 + [NORMAL],
-        13: [None]*5 + [NORMAL],
-        12: [None]*3 + [NORMAL]*3,
-        7: [None, JUMP] + [NORMAL]*3,
-        6: [None]*6 + [NORMAL]*2 + [JUMP, NORMAL] + [None]*13 + [JUMP] + [NORMAL],
+        13: [None]*3 + [NORMAL]*3,
+        9: [None, JUMP] + [NORMAL]*3,
+        8: [None]*6 + [NORMAL]*2 + [JUMP, NORMAL] + [None]*13 + [JUMP] + [NORMAL],
         0: [NORMAL]*10 + [None]*10 + [NORMAL]*7 + [JUMP] + [NORMAL]*2,
     }
 
