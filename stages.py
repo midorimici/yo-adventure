@@ -32,6 +32,50 @@ GRAVUD2_4 = [None, GRAVUD, GRAVUD, None]
 
 
 ### ステージ ###
+class Stage9:
+    # 名前
+    name = 'STAGE 9'
+
+    # クリア済み
+    clear = False
+
+    # 次のステージ
+    next_stage = None
+
+    # ゴールの座標
+    goal_pos = (27, 14)
+
+    # キャラの初期位置
+    obake_pos = (3, 13)
+
+    # 動かせるブロックの位置
+    #movable_block_pos = []
+
+    # ブロック配置
+    blocks = {
+        28: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        27: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        26: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        25: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [DARK]*4 + [None]*4 + [NORMAL]*4,
+        20: [None] + [GRAVUD]*4 + [None]*4 + [DARK]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [GRAVUD]*4,
+        19: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        18: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        17: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [DARK]*4 + [None]*4 + [NORMAL]*4,
+        12: [None] + [DARK]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [DARK]*4 + [None]*4 + [NORMAL]*4,
+        11: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [DARK]*4 + [DARK]*4 + [NORMAL]*4,
+        10: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [NORMAL]*4 + [NORMAL]*4,
+        9: [None] + [GRAVUD]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        8: [None]*26 + [NORMAL]*2,
+        7: [None]*26 + [NORMAL]*2,
+        6: [None]*26 + [NORMAL]*2,
+        5: [None]*26 + [NORMAL]*2,
+        4: [None] + [NORMAL]*4 + [None]*4 + [DARK]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        3: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        2: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+        1: [None] + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4 + [None]*4 + [NORMAL]*4,
+    }
+
+
 class Stage8:
     # 名前
     name = 'STAGE 8'
@@ -40,7 +84,7 @@ class Stage8:
     clear = False
 
     # 次のステージ
-    next_stage = None
+    next_stage = Stage9
 
     # ゴールの座標
     goal_pos = (26, 11)
