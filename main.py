@@ -65,7 +65,7 @@ else:
 	ga = 2.4*1.5
 	
 # ジャンプブロック初速係数
-JUMP_M = 8.4
+JUMP_M = 5
 
 # 重力の方向
 # u: ↑, d: ↓, l: ←, r: →
@@ -193,7 +193,10 @@ class Obake:
 				dx = prev_dx
 			else:
 				# 加速
-				dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+				if on_block('dark'):
+					dx = prev_dx
+				else:
+					dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
 		else:
 			# キーを離しているとき減速
 			dx = prev_dx - MOVE_A
@@ -224,7 +227,10 @@ class Obake:
 				dx = prev_dx
 			else:
 				# 加速
-				dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+				if on_block('dark'):
+					dx = prev_dx
+				else:
+					dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
 		else:
 			# キーを離しているとき減速
 			dx = prev_dx - MOVE_A
@@ -639,15 +645,15 @@ def change_gravity(kind):
 # システム関連の関数
 def judge_goal():
 	if (not stage.clear
-			and abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
-			and abs(obake.y - cv.coords(goal)[1] + BLOCK_SIZE/2) < IMG_HEIGHT):
-				clear_snd.play()
-				stage.clear = True
-				root.title(f'{stage.name} - CLEAR!')
-				cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
-						text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
-						justify='center', tag='clear')
-				cv.bind('N', to_next_stage)
+			and abs(obake.x - (cv.coords(goal)[0] + cv.coords(goal)[2])/2 + BLOCK_SIZE/2) < IMG_WIDTH
+			and abs(obake.y - (cv.coords(goal)[1] + cv.coords(goal)[3])/2 + BLOCK_SIZE/2) < IMG_HEIGHT):
+		clear_snd.play()
+		stage.clear = True
+		root.title(f'{stage.name} - CLEAR!')
+		cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
+				text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
+				justify='center', tag='clear')
+		cv.bind('N', to_next_stage)
 
 
 def to_next_stage(event):
