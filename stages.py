@@ -55,7 +55,7 @@ class Stage10:
     obake_pos = (15, 12)
 
     # 動かせるブロックの位置
-    #movable_block_pos = []
+    movable_block_pos = [(6, 8, M_NORMAL), (18, 8, M_NORMAL), (18, 16, M_NORMAL)]
 
     # ブロック配置
     blocks = {
@@ -63,27 +63,27 @@ class Stage10:
         26: [None] + [NORMAL] + [None]*5 + N__N_4 + [None]*8 + N__N_4 + [None]*5 + [NORMAL],
         25: [None] + [NORMAL] + [None]*26 + [NORMAL],
         24: [None] + N__N_4 + [None]*8 + N__D_4 + [None]*8 + N__N_4,
-        23: [None] + N__N_4 + [NORMAL]*8 + N__D_4 + [NORMAL]*3 + [JUMP]*2 + [NORMAL] + [GRAVUD]*2 + N__N_4,
+        23: [None] + N__N_4 + [NORMAL]*3 + [JUMP]*2 + [NORMAL]*3 + N__D_4 + [NORMAL]*3 + [JUMP]*2 + [GRAVUD]*3 + N__N_4,
         22: [None] + N__N_4 + [None]*8 + N__D_4 + [None]*8 + N__N_4,
         21: [None] + [NORMAL] + [None]*26 + [NORMAL],
         20: [None] + [NORMAL] + [None]*5 + N__N_4 + [None]*8 + N__D_4 + [None]*5 + [NORMAL],
-        19: [None] + [NORMAL]*6 + N__N_4 + [DARK]*4 + [NORMAL]*2 + [GRAVUD]*2 + N__D_4 + [NORMAL]*6,
+        19: [None] + [NORMAL]*6 + N__N_4 + [DARK]*3 + [NORMAL]*2 + [GRAVUD]*3 + N__D_4 + [NORMAL]*6,
         18: [None] + [NORMAL] + [None]*5 + N__N_4 + [None]*8 + N__D_4 + [None]*5 + [NORMAL],
         17: [None] + [NORMAL] + [None]*26 + [NORMAL],
         16: [None] + N__N_4 + [None]*8 + N__N_4 + [None]*8 + N__N_4,
-        15: [None] + N__N_4 + [NORMAL]*8 + N__N_4 + [DARK]*2 + [NORMAL]*6 + N__N_4,
+        15: [None] + N__N_4 + [NORMAL]*5 + [DARK]*3 + N__N_4 + [DARK]*3 + [NORMAL]*5 + N__N_4,
         14: [None] + N__N_4 + [None]*8 + N__N_4 + [None]*8 + N__N_4,
         13: [None] + [NORMAL] + [None]*26 + [NORMAL],
         12: [None] + [NORMAL] + [None]*5 + N__N_4 + [None]*8 + D__N_4 + [None]*5 + [NORMAL],
-        11: [None] + [NORMAL]*6 + N__N_4 + [DARK]*4 + [NORMAL]*4 + D__N_4 + [NORMAL]*6,
+        11: [None] + [NORMAL]*6 + N__N_4 + [DARK]*5 + [NORMAL]*3 + D__N_4 + [NORMAL]*6,
         10: [None] + [NORMAL] + [None]*5 + N__N_4 + [None]*8 + D__N_4 + [None]*5 + [NORMAL],
         9: [None] + [NORMAL] + [None]*26 + [NORMAL],
         8: [None] + N__N_4 + [None]*8 + N__D_4 + [None]*8 + N__N_4,
-        7: [None] + N__N_4 + [NORMAL]*8 + N__D_4 + [NORMAL]*6 + [GRAVUD]*2 + N__N_4,
+        7: [None] + N__N_4 + [NORMAL]*5 + [GRAVUD]*3 + N__D_4 + [NORMAL]*5 + [GRAVUD]*3 + N__N_4,
         6: [None] + N__N_4 + [None]*8 + N__D_4 + [None]*8 + N__N_4,
         5: [None] + [NORMAL] + [None]*26 + [NORMAL],
         4: [None] + [NORMAL] + [None]*5 + N__N_4 + [None]*8 + N__D_4 + [None]*5 + [NORMAL],
-        3: [None] + [NORMAL]*6 + N__N_4 + [NORMAL]*8 + N__D_4 + [NORMAL]*6,
+        3: [None] + [NORMAL] + [JUMP]*2 + [NORMAL]*3 + N__N_4 + [NORMAL]*3 + [JUMP]*2 + [NORMAL]*3 + N__D_4 + [NORMAL]*6,
     }
 
 
