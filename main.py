@@ -20,8 +20,10 @@ if DISP_W < 900 or DISP_H < 900:
 	WINDOW_WIDTH = 600
 	WINDOW_HEIGHT = 600
 
+	# タイマーテキストサイズ
+	TIMER_TEXT_SIZE = 20
 	# STAGE CLEAR テキストサイズ
-	TEXT_SIZE = 60
+	CLEAR_TEXT_SIZE = 60
 
 	# ブロックサイズ
 	BLOCK_SIZE = 20
@@ -44,8 +46,10 @@ else:
 	WINDOW_WIDTH = int(600*1.5)
 	WINDOW_HEIGHT = int(600*1.5)
 
+	# タイマーテキストサイズ
+	TIMER_TEXT_SIZE = int(20*1.5)
 	# STAGE CLEAR テキストサイズ
-	TEXT_SIZE = int(60*1.5)
+	CLEAR_TEXT_SIZE = int(60*1.5)
 
 	# ブロックサイズ
 	BLOCK_SIZE = int(20*1.5)
@@ -63,13 +67,17 @@ else:
 	JUMP_V0 = 12*1.5
 	# 重力加速度
 	ga = 2.4*1.5
-	
+
 # ジャンプブロック初速係数
 JUMP_M = 5
 
 # 重力の方向
 # u: ↑, d: ↓, l: ←, r: →
 grav_dir = 'd'
+
+# タイマー
+time = 0
+timer = None
 
 
 # キャラクター
@@ -642,16 +650,27 @@ def change_gravity(kind):
 			obake.y -= BLOCK_SIZE
 
 
-# システム関連の関数
+# システム関連の処理
+def addtime():
+	global time, timer
+	time += 0.125
+	cv.delete('timer')
+	cv.create_text(WINDOW_WIDTH - 2*TIMER_TEXT_SIZE, TIMER_TEXT_SIZE,
+		text=f'{time:>7.3f}', fill='gray20', font=("System", TIMER_TEXT_SIZE), tag='timer')
+	timer = root.after(125, addtime)
+
+
 def judge_goal():
+	global timer
 	if (not stage.clear
 			and abs(obake.x - (cv.coords(goal)[0] + cv.coords(goal)[2])/2 + BLOCK_SIZE/2) < IMG_WIDTH
 			and abs(obake.y - (cv.coords(goal)[1] + cv.coords(goal)[3])/2 + BLOCK_SIZE/2) < IMG_HEIGHT):
 		clear_snd.play()
+		root.after_cancel(timer)
 		stage.clear = True
 		root.title(f'{stage.name} - CLEAR!')
-		cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
-				text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
+		cv.create_text(WINDOW_WIDTH/2, CLEAR_TEXT_SIZE,
+				text='STAGE CLEAR!', fill='LimeGreen', font=("System", CLEAR_TEXT_SIZE),
 				justify='center', tag='clear')
 		cv.bind('N', to_next_stage)
 
@@ -665,7 +684,7 @@ def to_next_stage(event):
 
 
 def init_game(goal_pos, start_pos):
-	global grav_dir, goal, obake, blocks
+	global grav_dir, goal, obake, blocks, time
 	grav_dir = 'd'
 	cv.delete('all')
 	# インスタンス削除
@@ -700,10 +719,13 @@ def init_game(goal_pos, start_pos):
 		block = Block(BLOCK_SIZE*x,
 			WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
 		blocks.append(block)
+	
+	time = 0
+	addtime()
 
 
 def restart_game(*event):
-	global grav_dir, obake
+	global grav_dir, obake, time
 	grav_dir = 'd'
 	# クリア文字消去
 	cv.delete('clear')
@@ -723,6 +745,8 @@ def restart_game(*event):
 		block = Block(BLOCK_SIZE*x,
 			WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
 		blocks.append(block)
+	
+	time = 0
 
 
 if __name__ == '__main__':
