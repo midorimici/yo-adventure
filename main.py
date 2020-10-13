@@ -3,10 +3,12 @@ import math
 from ctypes import windll
 import tkinter as tk
 from PIL import Image, ImageTk, ImageOps
+
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 import stages
-
 
 
 # 画面サイズ
@@ -18,8 +20,10 @@ if DISP_W < 900 or DISP_H < 900:
 	WINDOW_WIDTH = 600
 	WINDOW_HEIGHT = 600
 
+	# タイマーテキストサイズ
+	TIMER_TEXT_SIZE = 20
 	# STAGE CLEAR テキストサイズ
-	TEXT_SIZE = 60
+	CLEAR_TEXT_SIZE = 60
 
 	# ブロックサイズ
 	BLOCK_SIZE = 20
@@ -29,17 +33,23 @@ if DISP_W < 900 or DISP_H < 900:
 	IMG_WIDTH = 30
 	IMG_HEIGHT = 30
 
-	# 横移動速度
-	MOVE_V = 4
+	# 横移動初速さ
+	MOVE_SPEED = 4
+	# 横移動加速度
+	MOVE_A = 1
 	# ジャンプ初速度
-	JUMP_V0 = 20
+	JUMP_V0 = 12
+	# 重力加速度
+	ga = 2.4
 else:
 	# ウィンドウサイズ
 	WINDOW_WIDTH = int(600*1.5)
 	WINDOW_HEIGHT = int(600*1.5)
 
+	# タイマーテキストサイズ
+	TIMER_TEXT_SIZE = int(20*1.5)
 	# STAGE CLEAR テキストサイズ
-	TEXT_SIZE = int(60*1.5)
+	CLEAR_TEXT_SIZE = int(60*1.5)
 
 	# ブロックサイズ
 	BLOCK_SIZE = int(20*1.5)
@@ -49,20 +59,25 @@ else:
 	IMG_WIDTH = int(30*1.5)
 	IMG_HEIGHT = int(30*1.5)
 
-	# 横移動速度
-	MOVE_V = 4*1.5
+	# 横移動初速さ
+	MOVE_SPEED = 4*1.5
+	# 横移動加速度
+	MOVE_A = 1*1.5
 	# ジャンプ初速度
-	JUMP_V0 = 20*1.5
-	
-# ジャンプブロック初速係数
-JUMP_M = 6
+	JUMP_V0 = 12*1.5
+	# 重力加速度
+	ga = 2.4*1.5
 
-# 重力加速度
-ga = JUMP_V0/6
+# ジャンプブロック初速係数
+JUMP_M = 5
 
 # 重力の方向
 # u: ↑, d: ↓, l: ←, r: →
 grav_dir = 'd'
+
+# タイマー
+time = 0
+timer = None
 
 
 # キャラクター
@@ -72,6 +87,12 @@ class Obake:
 		self.y = y
 		self.width = IMG_WIDTH
 		self.height = IMG_HEIGHT
+		# キャラの向き
+		# l: ←, r: →
+		self.seeing_direction = 'l'
+		# 加減速フラグ
+		# acc: 加速, dec: 減速
+		self.acc_state = 'acc'
 		# アニメーションの時刻
 		self.time_x = 0
 		self.time_y = 0
@@ -79,6 +100,14 @@ class Obake:
 		self.flying = False
 		# ダークブロックの影響下
 		self.isdark = False
+
+		# 大ジャンプ判定
+		self._do_long_jump = False
+		# キー操作
+		self._short_press_l = False
+		self._short_press_j = False
+		self._short_press_k = False
+
 		self.draw()
 		self.bind()
 	
@@ -95,68 +124,146 @@ class Obake:
 		self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
 
 	def bind(self):
-		cv.bind("l", self.move_right)
-		cv.bind("j", self.move_left)
-		cv.bind("k", self.jump)
+		# [L], [J] 押している間その方向に直線移動
+		cv.bind("<KeyPress-l>", self.on_keypress_l)
+		cv.bind("<KeyPress-j>", self.on_keypress_j)
+		# キーを離したらストップ
+		cv.bind("<KeyRelease-l>", self.on_keyrelease_l)
+		cv.bind("<KeyRelease-j>", self.on_keyrelease_j)
+		# [K] ちょっとだけ押すと小ジャンプ、長め押しで大ジャンプ
+		cv.bind("<KeyPress-k>", self.on_keypress_k)
+		cv.bind("<KeyRelease-k>", self.on_keyrelease_k)
+	
+	def on_keypress_l(self, event):
+		if not self._short_press_l:
+			self._short_press_l = True
+			self._short_press_j = False
+			self.move_right()
+	
+	def on_keypress_j(self, event):
+		if not self._short_press_j:
+			self._short_press_l = False
+			self._short_press_j = True
+			self.move_left()
+	
+	def on_keyrelease_l(self, event):
+		if self._short_press_l:
+			self._short_press_l = False
+	
+	def on_keyrelease_j(self, event):
+		if self._short_press_j:
+			self._short_press_j = False
+	
+	def on_keypress_k(self, event):
+		if not self._short_press_k:
+			self._short_press_k = True
+			self._do_long_jump = root.after(100, self.on_longpress_k)
+	
+	def on_keyrelease_k(self, event):
+		if self._short_press_k:
+			self.jump(JUMP_V0)
+			self._short_press_k = False
+			root.after_cancel(self._do_long_jump)
+	
+	def on_longpress_k(self):
+		self._short_press_k = False
+		root.after_cancel(self._do_long_jump)
+		self.jump(JUMP_V0*1.4)
 
-	def move_right(self, event):
-		if self.time_x > 0 and self.isdark: return
+	def move_right(self):
 		# 画像左右反転
 		self.delete()
 		if grav_dir == 'd':
 			self.id = cv.create_image(self.x, self.y, image=obake_mirror_tkimg)
 		elif grav_dir == 'u':
 			self.id = cv.create_image(self.x, self.y, image=obake_fm_tkimg)
+		self.seeing_direction = 'r'
 		self.time_x = 0
-		self.r_move()
+		self.r_move(MOVE_SPEED)
 	
-	def move_left(self, event):
-		if self.time_x > 0 and self.isdark: return
+	def move_left(self):
 		# 画像左右反転
 		self.delete()
 		if grav_dir == 'd':
 			self.id = cv.create_image(self.x, self.y, image=obake_tkimg)
 		elif grav_dir == 'u':
 			self.id = cv.create_image(self.x, self.y, image=obake_flip_tkimg)
+		self.seeing_direction = 'l'
 		self.time_x = 0
-		self.l_move()
+		self.l_move(MOVE_SPEED)
 	
-	def r_move(self):
+	def r_move(self, prev_dx):
 		xtmp = self.x
-		self.x += MOVE_V
+		if self._short_press_l:
+			# キー押下時
+			if self.flying:
+				# 空中にいるときは速度は不変
+				dx = prev_dx
+			else:
+				# 加速
+				if on_block('dark'):
+					dx = prev_dx
+				else:
+					dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+		else:
+			# キーを離しているとき減速
+			dx = prev_dx - MOVE_A
+			if dx < 0: return
+
+		self.x += dx
 		if not self.flying:
 			self.fall_move()
+			if self.time_x == -1: return
 		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
+			self._short_press_l = False
+			self._short_press_j = False
 			cv.coords(self.id, self.x, self.y)
 			return
-		if self.flying or self.time_x < 5:
-			self.time_x += 1
-			root.after(50, self.r_move)
-		else:
-			self.time_x = 0
+		self.time_x += 1
+		self._lr_move = root.after(50, self.r_move, dx)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
-	def l_move(self):
+	def l_move(self, prev_dx):
 		xtmp = self.x
-		self.x -= MOVE_V
+		if self._short_press_j:
+			# キー押下時
+			if self.flying:
+				# 空中にいるときは速度は不変
+				dx = prev_dx
+			else:
+				# 加速
+				if on_block('dark'):
+					dx = prev_dx
+				else:
+					dx = prev_dx + min(MOVE_A, 4*MOVE_SPEED)
+		else:
+			# キーを離しているとき減速
+			dx = prev_dx - MOVE_A
+			if dx < 0: return
+
+		self.x -= dx
 		if not self.flying:
 			self.fall_move()
+			if self.time_x == -1: return
 		if hitting_block_x(self):
 			self.x = xtmp
 			self.time_x = 0
+			self._short_press_l = False
+			self._short_press_j = False
 			cv.coords(self.id, self.x, self.y)
 			return
-		if self.flying or self.time_x < 5:
-			self.time_x += 1
-			root.after(50, self.l_move)
-		else:
-			self.time_x = 0
+		self.time_x += 1
+		self._lr_move = root.after(50, self.l_move, dx)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
+	def stop(self):
+		root.after_cancel(self._lr_move)
+		self.time_x = 0
+
 	def fall_move(self):
 		dy = min(ga*self.time_y, 20)
 		if grav_dir == 'd':
@@ -198,14 +305,14 @@ class Obake:
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 	
-	def jump(self, event):
+	def jump(self, vel):
 		if self.flying or on_block('dark'): return
 		jump_snd.play()
 		self.flying = True
-		self.jump_move()
+		self.jump_move(vel)
 	
-	def jump_move(self):
-		v0 = JUMP_M*JUMP_V0 if on_block('jump') else JUMP_V0
+	def jump_move(self, vel):
+		v0 = JUMP_M*vel if on_block('jump') else vel
 		dy = max(v0 - ga*self.time_y, -20)
 		if grav_dir == 'd':
 			self.y -= dy
@@ -223,7 +330,7 @@ class Obake:
 				self.flying = False
 			else:
 				self.time_y += 1
-				root.after(50, self.jump_move)
+				root.after(50, self.jump_move, vel)
 		elif grav_dir == 'u':
 			self.y += dy
 			if self.y < 0:
@@ -240,7 +347,7 @@ class Obake:
 				self.flying = False
 			else:
 				self.time_y += 1
-				root.after(50, self.jump_move)
+				root.after(50, self.jump_move, vel)
 		cv.coords(self.id, self.x, self.y)
 		judge_goal()
 
@@ -459,9 +566,9 @@ def hitting_block_ceil():
 	-----
 	if 文条件式の図
 
-	abs(block.x - obj.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
+	abs(block.x - obj.x) < (IMG_WIDTH + size)/2 - 2
 
-	  BLOCK_SIZE
+	    size
 		┌ x ┐
 		│   │		block
 	┌ ─ ┼ ─ ┼ ─ ┐
@@ -469,17 +576,22 @@ def hitting_block_ceil():
 	└ ─ ┘ ↔ └ ─ ┘
 		  IMG_WIDTH
 	
-	block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2
+	block.y + size <= obake.y <= block.y + size + IMG_HEIGHT/2
 
 		┌ y ┐		↑
-	  ⇡ │   │  BLOCK_SIZE
+	  ⇡ │   │      size
 	┌ ─ ┼ ─ ┘	↑	↓
 	│ y │   IMG_HEIGHT
 	└ ─ ┘ 		↓
 	'''
 	for block in blocks:
-		if (abs(block.x - obake.x) < (IMG_WIDTH + BLOCK_SIZE)/2 - 2
-				and block.y + BLOCK_SIZE <= obake.y <= block.y + BLOCK_SIZE + IMG_HEIGHT/2):
+		# ブロックが動かせるとき、サイズ2倍で計算
+		if getattr(block, 'movable', False):
+			size = BLOCK_SIZE*2
+		else:
+			size = BLOCK_SIZE
+		if (abs(block.x - obake.x) < (IMG_WIDTH + size)/2 - 2
+				and block.y + size <= obake.y <= block.y + size + IMG_HEIGHT/2):
 			if block.param == 'udarrow' and grav_dir == 'd':
 				change_gravity('ud')
 			return True
@@ -527,39 +639,52 @@ def change_gravity(kind):
 		if grav_dir == 'd':
 			grav_dir = 'u'
 			obake.delete()
-			obake.id = cv.create_image(obake.x, obake.y, image=obake_flip_tkimg)
+			obake.id = cv.create_image(obake.x, obake.y,
+				image=(obake_flip_tkimg if obake.seeing_direction == 'l' else obake_fm_tkimg))
 			obake.y += BLOCK_SIZE
 		elif grav_dir == 'u':
 			grav_dir = 'd'
 			obake.delete()
-			obake.id = cv.create_image(obake.x, obake.y, image=obake_tkimg)
+			obake.id = cv.create_image(obake.x, obake.y,
+				image=(obake_tkimg if obake.seeing_direction == 'l' else obake_mirror_tkimg))
 			obake.y -= BLOCK_SIZE
 
 
-# システム関連の関数
+# システム関連の処理
+def addtime():
+	global time, timer
+	time += 0.125
+	cv.delete('timer')
+	cv.create_text(WINDOW_WIDTH - 2*TIMER_TEXT_SIZE, TIMER_TEXT_SIZE,
+		text=f'{time:>7.3f}', fill='gray20', font=("System", TIMER_TEXT_SIZE), tag='timer')
+	timer = root.after(125, addtime)
+
+
 def judge_goal():
+	global timer
 	if (not stage.clear
-			and abs(obake.x - cv.coords(goal)[0] + BLOCK_SIZE/2) < IMG_WIDTH
-			and abs(obake.y - cv.coords(goal)[1] + BLOCK_SIZE/2) < IMG_HEIGHT):
-				clear_snd.play()
-				stage.clear = True
-				root.title(f'{stage.name} - CLEAR!')
-				cv.create_text(WINDOW_WIDTH/2, TEXT_SIZE,
-						text='STAGE CLEAR!', fill='LimeGreen', font=("System", TEXT_SIZE),
-						justify='center', tag='clear')
-				cv.bind('N', to_next_stage)
+			and abs(obake.x - (cv.coords(goal)[0] + cv.coords(goal)[2])/2 + BLOCK_SIZE/2) < IMG_WIDTH
+			and abs(obake.y - (cv.coords(goal)[1] + cv.coords(goal)[3])/2 + BLOCK_SIZE/2) < IMG_HEIGHT):
+		clear_snd.play()
+		root.after_cancel(timer)
+		stage.clear = True
+		root.title(f'{stage.name} - CLEAR!')
+		cv.create_text(WINDOW_WIDTH/2, CLEAR_TEXT_SIZE,
+				text='STAGE CLEAR!', fill='LimeGreen', font=("System", CLEAR_TEXT_SIZE),
+				justify='center', tag='clear')
+		cv.bind('N', to_next_stage)
 
 
 def to_next_stage(event):
 	global stage
-	if stage.clear:
+	if stage.clear and stage.next_stage is not None:
 		stage = stage.next_stage()
 		root.title(stage.name)
 		init_game(stage.goal_pos, stage.obake_pos)
 
 
 def init_game(goal_pos, start_pos):
-	global grav_dir, goal, obake, blocks
+	global grav_dir, goal, obake, blocks, time
 	grav_dir = 'd'
 	cv.delete('all')
 	# インスタンス削除
@@ -594,10 +719,13 @@ def init_game(goal_pos, start_pos):
 		block = Block(BLOCK_SIZE*x,
 			WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
 		blocks.append(block)
+	
+	time = 0
+	addtime()
 
 
 def restart_game(*event):
-	global grav_dir, obake
+	global grav_dir, obake, time
 	grav_dir = 'd'
 	# クリア文字消去
 	cv.delete('clear')
@@ -617,13 +745,19 @@ def restart_game(*event):
 		block = Block(BLOCK_SIZE*x,
 			WINDOW_HEIGHT - BLOCK_SIZE*(y + 2), param, True)
 		blocks.append(block)
+	
+	time = 0
 
 
 if __name__ == '__main__':
 	# ステージ
 	args = sys.argv
 	if len(args) >= 2 and args[1].isdigit():
-		stage = stages.stages_dict[int(args[1])]()
+		stage_class = getattr(stages, f'Stage{int(args[1])}', None)
+		if stage_class is None:
+			print('不正なコマンドライン引数です。1 ~ 8 の整数値を指定してください。')
+			sys.exit()
+		else: stage = stage_class()
 	else:
 		stage = stages.Stage1()
 	
