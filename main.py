@@ -675,7 +675,7 @@ def judge_goal():
 		cv.bind('N', to_next_stage)
 
 
-def to_next_stage(event):
+def to_next_stage(*event):
 	global stage
 	if stage.clear and stage.next_stage is not None:
 		stage = stage.next_stage()
@@ -755,7 +755,7 @@ if __name__ == '__main__':
 	if len(args) >= 2 and args[1].isdigit():
 		stage_class = getattr(stages, f'Stage{int(args[1])}', None)
 		if stage_class is None:
-			print('不正なコマンドライン引数です。1 ~ 8 の整数値を指定してください。')
+			print('不正なコマンドライン引数です。1 ~ 10 の整数値を指定してください。')
 			sys.exit()
 		else: stage = stage_class()
 	else:
@@ -810,9 +810,11 @@ if __name__ == '__main__':
 	# メニューバー
 	menubar = tk.Menu(root)
 	root.configure(menu=menubar)
-	menubar.add_command(label='RESTART', underline=0, command=restart_game)
+	menubar.add_command(label='[R]ESTART', underline=0, command=restart_game)
+	menubar.add_command(label='[N]EXT', underline=0, command=to_next_stage)
+	menubar.add_command(label='QUIT', underline=0, command=root.quit)
 
-	# キーバインド（リスタート）
+	# キーバインド
 	cv.bind('R', restart_game)
 
 	# 初期化
